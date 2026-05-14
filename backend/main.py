@@ -23,14 +23,15 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from config import (
+    ACTIVE_CONFIG,
     CHECKPOINT_PATH,
     CORS_ORIGINS,
     GenerationDefaults,
-    ModelConfig,
     SERVER_HOST,
     SERVER_PORT,
+    TOKENIZER_NAME,
 )
-from inference import GenerationRequest, engine
+from inference import DEFAULT_SYSTEM, GenerationRequest, engine
 
 # ---------------------------------------------------------------------------
 # Logging setup
@@ -81,9 +82,9 @@ app = FastAPI(
     title="Noir Whisper — RangeFlow LLM Backend",
     description=(
         "Local inference server for the Noir Whisper chat UI. "
-        "Powered by a RangeFlow-constrained GPT-124M model."
+        "Powered by a RangeFlow-constrained Senku GPT model."
     ),
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
@@ -102,8 +103,9 @@ app.add_middleware(
 
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=4096)
+    system: str = Field(default=DEFAULT_SYSTEM, max_length=2048)
 
-    max_tokens:         int   = Field(default=GenerationDefaults.MAX_TOKENS,          ge=1,    le=ModelConfig.MAX_SEQ_LEN)
+    max_tokens:         int   = Field(default=GenerationDefaults.MAX_TOKENS,          ge=1,    le=ACTIVE_CONFIG.max_seq_len)
     temperature:        float = Field(default=GenerationDefaults.TEMPERATURE,         ge=0.01, le=5.0)
     top_p:              float = Field(default=GenerationDefaults.TOP_P,               ge=0.0,  le=1.0)
     top_k:              int   = Field(default=GenerationDefaults.TOP_K,               ge=1,    le=200)
@@ -117,6 +119,11 @@ class GenerateRequest(BaseModel):
         if not v:
             raise ValueError("prompt must not be empty")
         return v
+
+    @field_validator("system")
+    @classmethod
+    def strip_system(cls, v: str) -> str:
+        return v.strip() or DEFAULT_SYSTEM
 
 
 class GenerateResponse(BaseModel):
@@ -143,8 +150,8 @@ _server_start = time.time()
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    t0   = time.perf_counter()
-    resp = await call_next(request)
+    t0      = time.perf_counter()
+    resp    = await call_next(request)
     elapsed = (time.perf_counter() - t0) * 1000
     logger.info("%-6s %-30s → %d  (%.1f ms)",
                 request.method, request.url.path, resp.status_code, elapsed)
@@ -184,15 +191,17 @@ async def health():
 
 @app.get("/config", tags=["meta"])
 async def get_config():
+    cfg = ACTIVE_CONFIG
     return {
         "model": {
-            "vocab_size":  ModelConfig.VOCAB_SIZE,
-            "d_model":     ModelConfig.D_MODEL,
-            "n_layers":    ModelConfig.N_LAYERS,
-            "n_heads":     ModelConfig.N_HEADS,
-            "d_ff":        ModelConfig.D_FF,
-            "max_seq_len": ModelConfig.MAX_SEQ_LEN,
+            "vocab_size":  cfg.vocab_size,
+            "d_model":     cfg.d_model,
+            "n_layers":    cfg.n_layers,
+            "n_heads":     cfg.n_heads,
+            "d_ff":        cfg.d_ff,
+            "max_seq_len": cfg.max_seq_len,
         },
+        "tokenizer": TOKENIZER_NAME,
         "defaults": {
             "max_tokens":         GenerationDefaults.MAX_TOKENS,
             "temperature":        GenerationDefaults.TEMPERATURE,
@@ -213,6 +222,7 @@ async def get_config():
 def _make_req(body: GenerateRequest) -> GenerationRequest:
     return GenerationRequest(
         prompt             = body.prompt,
+        system             = body.system,
         max_tokens         = body.max_tokens,
         temperature        = body.temperature,
         top_p              = body.top_p,
@@ -258,11 +268,9 @@ async def generate_stream(body: GenerateRequest):
     req  = _make_req(body)
     loop = asyncio.get_event_loop()
 
-    # asyncio.Queue bridges the background thread → async generator
     queue: asyncio.Queue = asyncio.Queue()
 
     def run_in_thread():
-        """Runs the blocking generation loop in a ThreadPoolExecutor."""
         try:
             engine.generate_stream(req, queue, loop)
         except Exception as exc:
@@ -270,19 +278,14 @@ async def generate_stream(body: GenerateRequest):
             loop.call_soon_threadsafe(queue.put_nowait, ("error", str(exc)))
 
     async def event_stream():
-        # Kick generation off in a background thread so the event loop stays free
         loop.run_in_executor(None, run_in_thread)
-
         while True:
             kind, payload = await queue.get()
-
             if kind == "token":
                 yield f"data: {json.dumps({'token': payload})}\n\n"
-
             elif kind == "done":
                 yield f"data: {json.dumps({'done': True, 'tokens_generated': payload})}\n\n"
                 break
-
             elif kind == "error":
                 yield f"data: {json.dumps({'error': payload})}\n\n"
                 break
@@ -292,7 +295,7 @@ async def generate_stream(body: GenerateRequest):
         media_type="text/event-stream",
         headers={
             "Cache-Control":     "no-cache",
-            "X-Accel-Buffering": "no",  # prevent Nginx from buffering the stream
+            "X-Accel-Buffering": "no",
         },
     )
 
