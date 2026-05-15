@@ -8,7 +8,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ sidebarOpen, onToggleSidebar, onNewChat }: ChatHeaderProps) {
   return (
-    <header className="h-12 flex items-center justify-between px-3 border-b border-border bg-background z-20 shrink-0">
+    <header className="h-16 flex items-center justify-between px-3 bg-background z-20 shrink-0">
       <div className="flex items-center gap-2">
         <button
           onClick={onToggleSidebar}
@@ -28,14 +28,12 @@ export function ChatHeader({ sidebarOpen, onToggleSidebar, onNewChat }: ChatHead
 
       <div className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground">
-          N
+          D
         </div>
-        <span className="text-sm font-medium hidden sm:inline">New chat</span>
+        <span className="text-sm font-medium hidden sm:inline">Dheeren's LLM (Senku)</span>
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-accent" title="Backend connected" />
-        <span className="text-xs text-muted-foreground hidden sm:inline">Connected</span>
       </div>
     </header>
   );

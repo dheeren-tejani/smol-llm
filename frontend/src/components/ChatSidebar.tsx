@@ -19,7 +19,7 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-background/60 z-30 md:hidden"
+          className="fixed inset-0 bg-background/10 z-30 md:hidden"
           onClick={onClose}
         />
       )}
@@ -27,7 +27,7 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
       <aside
         className={`
           fixed md:relative z-40 top-0 left-0 h-full
-          bg-secondary border-r border-border
+          bg-secondary 
           transition-all duration-300 ease-in-out
           overflow-hidden
           ${open ? 'w-[280px]' : 'w-0'}
@@ -45,10 +45,20 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
           </div>
 
           {/* About */}
-          <div className="px-4 py-3">
-            <h2 className="text-sm font-semibold text-foreground mb-2">About</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="text-foreground font-medium">Noir Whisper</span> is a minimal AI chat interface powered by a local LLM backend. Designed for developers who prefer control over their inference parameters.
+          <div className="px-4 py-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="text-foreground font-medium">Dheeren's Chat</span> is a portfolio project developed by Dheeren. Trained the model from scratch with cosmopedia, finetuned it OpenHermes, created both backend and frontend server with UI for chatting, feel free to test it.
+            </p>
+            <p className="text-sm text-muted-foreground mt-3">
+              GitHub:{' '}
+              <a      
+                href="https://github.com/dheeren-tejani/smol-llm"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground underline underline-offset-2 hover:text-accent transition-colors duration-200"
+              >
+                dheeren-tejani/smol-llm
+              </a>
             </p>
           </div>
 
@@ -112,7 +122,7 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
               <ParameterControl
                 label="Range Epsilon"
                 description="Minimum probability threshold for token filtering. Decides how many logits are most relevant to the prompt."
-                value={parameters.range_epsilon}
+                value={0.2}
                 min={0}
                 max={1}
                 step={0.01}

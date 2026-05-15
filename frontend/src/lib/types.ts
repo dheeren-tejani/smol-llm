@@ -15,12 +15,12 @@ export interface ChatParameters {
 }
 
 export const DEFAULT_PARAMETERS: ChatParameters = {
-  max_tokens: 512,
-  temperature: 0.7,
+  max_tokens: 256,
+  temperature: 0.1,
   top_p: 0.9,
   top_k: 50,
-  repetition_penalty: 1.1,
+  repetition_penalty: 1.3,
   range_epsilon: 0.1,
 };
 
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';

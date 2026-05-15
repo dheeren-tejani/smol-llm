@@ -6,12 +6,22 @@ import { MessageCircle } from 'lucide-react';
 import { ChatMessage } from '@/lib/types';
 import { TypingIndicator } from './TypingIndicator';
 
+const SUGGESTIONS = [
+  "Define Gravity",
+  "What is the difference between machine learning and deep learning?",
+  "Once upon a time,",
+  "What is photosynthesis?",
+  "What is the Fibonacci sequence?",
+  "Tell me a short story",
+];
+
 interface ChatAreaProps {
   messages: ChatMessage[];
   isLoading: boolean;
+  onSuggestion: (text: string) => void; // add this
 }
 
-function EmptyState() {
+function EmptyState({ onSuggestion }: { onSuggestion: (text: string) => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
       <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
@@ -19,8 +29,19 @@ function EmptyState() {
       </div>
       <h2 className="text-xl font-semibold text-foreground mb-2">Start a New Conversation</h2>
       <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-        Experimental!! This model rambles a lot, it is not comparable to production ready models like Gemini, ChatGPT, etc, but it performs quite good in story telling/rambling
+        Experimental!! This model Hallucinates, it is not comparable to production ready models like Gemini, ChatGPT, etc, but it performs quite good in story generation and creative tasks and some basic education stuff.
       </p>
+      <div className="flex flex-wrap gap-2 justify-center max-w-lg py-8">
+        {SUGGESTIONS.map(s => (
+          <button
+            key={s}
+            onClick={() => onSuggestion(s)}
+            className="px-3 py-1.5 text-xs text-muted-foreground border border-border rounded-full hover:bg-muted hover:text-foreground transition-colors duration-200"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -33,7 +54,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     <div className={`flex gap-2 animate-message-in ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
         <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground shrink-0 mt-0.5">
-          N
+          S
         </div>
       )}
       <div
@@ -88,7 +109,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-export function ChatArea({ messages, isLoading }: ChatAreaProps) {
+export function ChatArea({ messages, isLoading, onSuggestion }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -96,7 +117,7 @@ export function ChatArea({ messages, isLoading }: ChatAreaProps) {
   }, [messages, isLoading]);
 
   if (messages.length === 0 && !isLoading) {
-    return <EmptyState />;
+    return <EmptyState onSuggestion={onSuggestion} />;
   }
 
   return (

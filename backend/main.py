@@ -1,5 +1,5 @@
 """
-main.py — FastAPI application for the Noir Whisper backend.
+main.py — FastAPI application for the backend.
 
 Endpoints
 ---------
@@ -47,7 +47,7 @@ logging.basicConfig(
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-logger = logging.getLogger("noir_whisper.api")
+logger = logging.getLogger("dheeren's_chat.api")
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ logger = logging.getLogger("noir_whisper.api")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("=" * 60)
-    logger.info("  Noir Whisper Backend — starting up")
+    logger.info("  Senku Backend — starting up")
     logger.info("=" * 60)
 
     try:
@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    logger.info("Noir Whisper Backend — shutting down")
+    logger.info("Senku Backend — shutting down")
 
 
 # ---------------------------------------------------------------------------
@@ -79,9 +79,9 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="Noir Whisper — RangeFlow LLM Backend",
+    title="Senku — RangeFlow LLM Backend",
     description=(
-        "Local inference server for the Noir Whisper chat UI. "
+        "Local inference server for the Senku chat UI. "
         "Powered by a RangeFlow-constrained Senku GPT model."
     ),
     version="2.0.0",

@@ -1,5 +1,5 @@
 """
-inference.py — Generation engine for the Noir Whisper backend.
+inference.py — Generation engine for the backend.
 Updated to use the Senku model (HF tokenizer, RoPE, RMSNorm, SwiGLU).
 
 Two generation methods:
@@ -30,7 +30,7 @@ from config import (
 )
 from model import GPT
 
-logger = logging.getLogger("noir_whisper.inference")
+logger = logging.getLogger("dheeren's_chat.inference")
 
 
 # ---------------------------------------------------------------------------

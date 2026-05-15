@@ -1,5 +1,5 @@
 """
-model.py — RangeFlow-aware GPT architecture (Senku / Noir Whisper backend).
+model.py — RangeFlow-aware GPT architecture (Senku backend).
 
 Architecture (matches the trained Senku checkpoint):
   • RMSNorm           — pre-norm, fp32 upcast for numerical stability
@@ -31,7 +31,7 @@ import torch.nn.functional as F
 
 from config import ModelConfig
 
-logger = logging.getLogger("noir_whisper.model")
+logger = logging.getLogger("dheeren's_chat.model")
 
 
 # ---------------------------------------------------------------------------

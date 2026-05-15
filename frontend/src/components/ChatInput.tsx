@@ -9,7 +9,7 @@ interface ChatInputProps {
   maxLength?: number;
 }
 
-export function ChatInput({ value, onChange, onSend, disabled, maxLength = 2000 }: ChatInputProps) {
+export function ChatInput({ value, onChange, onSend, disabled, maxLength = 1024 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function ChatInput({ value, onChange, onSend, disabled, maxLength = 2000 
   };
 
   return (
-    <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+    <div className="shrink-0 bg-background px-4 py-3">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-end gap-2 bg-card border border-border rounded-xl px-3 py-2 transition-shadow duration-200 focus-within:shadow-[0_0_0_1px_hsl(0_0%_20%)]">
           <button

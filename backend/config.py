@@ -1,12 +1,14 @@
 """
-config.py — Central configuration for the Noir Whisper backend.
+config.py — Central configuration for the backend.
 Updated to match the Senku model architecture (RoPE + RMSNorm + SwiGLU).
 """
 
 import os
 import math
 from dataclasses import dataclass, field
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Model architecture
@@ -92,6 +94,7 @@ CORS_ORIGINS: list[str] = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
     "http://localhost:8080",
+    "https://smol-llm.netlify.app"
 ]
 
 

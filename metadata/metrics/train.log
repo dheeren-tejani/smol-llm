@@ -1,0 +1,115 @@
+2026-05-06 18:11:49  Run directory : logs/senku_sft_gpt2-small_20260506_181149
+2026-05-06 18:11:49  Text log      : logs/senku_sft_gpt2-small_20260506_181149/train.log
+2026-05-06 18:11:49  Metrics CSV   : logs/senku_sft_gpt2-small_20260506_181149/metrics.csv
+2026-05-06 18:11:49  
+═════════════════════════════════════════════════════════════════
+2026-05-06 18:11:49    Run : senku_sft_gpt2-small
+2026-05-06 18:11:49  ═════════════════════════════════════════════════════════════════
+2026-05-06 18:11:49    data                      data/senku_sft_50k.json
+2026-05-06 18:11:49    tokenizer                 gpt2
+2026-05-06 18:11:49    val_ratio                 0.02
+2026-05-06 18:11:49    preset                    gpt2-small
+2026-05-06 18:11:49    ckpt                      checkpoints/latest.pt
+2026-05-06 18:11:49    resume                    None
+2026-05-06 18:11:49    seq_len                   1024
+2026-05-06 18:11:49    dropout                   0.1
+2026-05-06 18:11:49    epochs                    3
+2026-05-06 18:11:49    batch_size                32
+2026-05-06 18:11:49    grad_accum                8
+2026-05-06 18:11:49    lr                        2e-05
+2026-05-06 18:11:49    weight_decay              0.1
+2026-05-06 18:11:49    grad_clip                 1.0
+2026-05-06 18:11:49    warmup_steps              -1
+2026-05-06 18:11:49    dtype                     bf16
+2026-05-06 18:11:49    compile                   False
+2026-05-06 18:11:49    seed                      42
+2026-05-06 18:11:49    device                    None
+2026-05-06 18:11:49    num_workers               16
+2026-05-06 18:11:49    out_dir                   sft/
+2026-05-06 18:11:49    log_every                 10
+2026-05-06 18:11:49    eval_every                200
+2026-05-06 18:11:49    save_every                500
+2026-05-06 18:11:49    eval_batches              50
+2026-05-06 18:11:49    total_steps               574
+2026-05-06 18:11:49    n_params_M                123.6
+2026-05-06 18:11:49  ═════════════════════════════════════════════════════════════════
+
+2026-05-06 18:11:49  
+Training started  —  574 steps  |  0.02B tokens
+
+2026-05-06 18:12:01  step      10 | loss  1.9827 | lr 7.14e-06 |   174.3k tok/s | gnorm  1.75 | 0.002B toks | step_took 1091.0ms | total_time     12s
+2026-05-06 18:12:12  step      20 | loss  1.9217 | lr 1.43e-05 |   162.6k tok/s | gnorm  0.91 | 0.004B toks | step_took 1105.2ms | total_time     23s
+2026-05-06 18:12:24  step      30 | loss  1.8669 | lr 2.00e-05 |   201.6k tok/s | gnorm  0.80 | 0.006B toks | step_took 1099.5ms | total_time     34s
+2026-05-06 18:12:35  step      40 | loss  1.8260 | lr 2.00e-05 |   226.4k tok/s | gnorm  0.75 | 0.009B toks | step_took 1154.5ms | total_time     46s
+2026-05-06 18:12:47  step      50 | loss  1.7740 | lr 1.99e-05 |   150.0k tok/s | gnorm  0.74 | 0.011B toks | step_took 1095.3ms | total_time     57s
+2026-05-06 18:12:58  step      60 | loss  1.7797 | lr 1.99e-05 |   204.4k tok/s | gnorm  0.70 | 0.013B toks | step_took 1133.4ms | total_time     69s
+2026-05-06 18:13:09  step      70 | loss  1.7696 | lr 1.98e-05 |   223.6k tok/s | gnorm  0.76 | 0.016B toks | step_took 1076.2ms | total_time     80s
+2026-05-06 18:13:20  step      80 | loss  1.7463 | lr 1.96e-05 |   220.9k tok/s | gnorm  0.73 | 0.018B toks | step_took 1062.7ms | total_time     91s
+2026-05-06 18:13:32  step      90 | loss  1.7398 | lr 1.95e-05 |   218.4k tok/s | gnorm  0.74 | 0.020B toks | step_took 1184.0ms | total_time    102s
+2026-05-06 18:13:43  step     100 | loss  1.6958 | lr 1.93e-05 |   190.7k tok/s | gnorm  0.71 | 0.023B toks | step_took 1154.4ms | total_time    114s
+2026-05-06 18:13:54  step     110 | loss  1.6881 | lr 1.90e-05 |   155.7k tok/s | gnorm  0.70 | 0.025B toks | step_took 1166.1ms | total_time    125s
+2026-05-06 18:14:06  step     120 | loss  1.6989 | lr 1.88e-05 |   194.5k tok/s | gnorm  0.74 | 0.027B toks | step_took 1144.8ms | total_time    137s
+2026-05-06 18:14:17  step     130 | loss  1.6619 | lr 1.85e-05 |   179.3k tok/s | gnorm  0.73 | 0.029B toks | step_took 1100.9ms | total_time    148s
+2026-05-06 18:14:29  step     140 | loss  1.6565 | lr 1.82e-05 |   211.3k tok/s | gnorm  0.69 | 0.032B toks | step_took 1226.0ms | total_time    159s
+2026-05-06 18:14:40  step     150 | loss  1.6480 | lr 1.79e-05 |   206.4k tok/s | gnorm  0.64 | 0.034B toks | step_took 1178.2ms | total_time    171s
+2026-05-06 18:14:51  step     160 | loss  1.6290 | lr 1.76e-05 |   211.5k tok/s | gnorm  0.69 | 0.036B toks | step_took 1089.2ms | total_time    182s
+2026-05-06 18:15:02  step     170 | loss  1.6211 | lr 1.72e-05 |   211.5k tok/s | gnorm  0.62 | 0.038B toks | step_took 1122.0ms | total_time    193s
+2026-05-06 18:15:14  step     180 | loss  1.6165 | lr 1.68e-05 |   197.2k tok/s | gnorm  0.59 | 0.041B toks | step_took 1122.9ms | total_time    204s
+2026-05-06 18:15:25  step     190 | loss  1.6184 | lr 1.64e-05 |   218.2k tok/s | gnorm  0.59 | 0.043B toks | step_took 1128.6ms | total_time    216s
+2026-05-06 18:15:36  step     200 | loss  1.5211 | lr 1.60e-05 |   208.4k tok/s | gnorm  0.57 | 0.045B toks | step_took 1181.5ms | total_time    227s
+2026-05-06 18:15:38  ──────────────────────────────  EVAL step 200  val_loss=1.5814  ──────────────────────────────
+2026-05-06 18:15:38  EVAL step=200 val_loss=1.581358
+2026-05-06 18:15:40    ✓ Checkpoint saved → sft/best.pt  [BEST]  (step 200)
+2026-05-06 18:15:40  CHECKPOINT step=200 path=sft/best.pt  [BEST]
+2026-05-06 18:15:51  step     210 | loss  1.6089 | lr 1.55e-05 |   180.4k tok/s | gnorm  0.60 | 0.048B toks | step_took 1094.2ms | total_time    242s
+2026-05-06 18:16:02  step     220 | loss  1.5843 | lr 1.51e-05 |   185.9k tok/s | gnorm  0.58 | 0.050B toks | step_took 1078.2ms | total_time    253s
+2026-05-06 18:16:14  step     230 | loss  1.5495 | lr 1.46e-05 |   213.6k tok/s | gnorm  0.57 | 0.052B toks | step_took 1169.9ms | total_time    264s
+2026-05-06 18:16:25  step     240 | loss  1.5788 | lr 1.41e-05 |   212.2k tok/s | gnorm  0.56 | 0.054B toks | step_took 1150.8ms | total_time    276s
+2026-05-06 18:16:36  step     250 | loss  1.5598 | lr 1.37e-05 |   168.1k tok/s | gnorm  0.55 | 0.056B toks | step_took 1207.8ms | total_time    287s
+2026-05-06 18:16:48  step     260 | loss  1.5663 | lr 1.32e-05 |   214.2k tok/s | gnorm  0.56 | 0.059B toks | step_took 1140.2ms | total_time    299s
+2026-05-06 18:16:59  step     270 | loss  1.5545 | lr 1.26e-05 |   190.9k tok/s | gnorm  0.58 | 0.061B toks | step_took 1084.8ms | total_time    310s
+2026-05-06 18:17:10  step     280 | loss  1.5809 | lr 1.21e-05 |   208.0k tok/s | gnorm  0.57 | 0.063B toks | step_took 1126.2ms | total_time    321s
+2026-05-06 18:17:22  step     290 | loss  1.5685 | lr 1.16e-05 |   180.2k tok/s | gnorm  0.55 | 0.065B toks | step_took 1186.1ms | total_time    332s
+2026-05-06 18:17:33  step     300 | loss  1.5570 | lr 1.11e-05 |   190.2k tok/s | gnorm  0.58 | 0.067B toks | step_took 1103.4ms | total_time    344s
+2026-05-06 18:17:44  step     310 | loss  1.5655 | lr 1.06e-05 |   227.2k tok/s | gnorm  0.56 | 0.070B toks | step_took 1114.1ms | total_time    355s
+2026-05-06 18:17:55  step     320 | loss  1.5449 | lr 1.01e-05 |   188.5k tok/s | gnorm  0.58 | 0.072B toks | step_took 1091.8ms | total_time    366s
+2026-05-06 18:18:07  step     330 | loss  1.5478 | lr 9.56e-06 |   197.7k tok/s | gnorm  0.58 | 0.074B toks | step_took 1135.4ms | total_time    378s
+2026-05-06 18:18:18  step     340 | loss  1.5308 | lr 9.05e-06 |   207.3k tok/s | gnorm  0.57 | 0.077B toks | step_took 1160.7ms | total_time    389s
+2026-05-06 18:18:30  step     350 | loss  1.5305 | lr 8.55e-06 |   209.4k tok/s | gnorm  0.54 | 0.079B toks | step_took 1193.4ms | total_time    401s
+2026-05-06 18:18:41  step     360 | loss  1.5317 | lr 8.05e-06 |   211.7k tok/s | gnorm  0.57 | 0.081B toks | step_took 1098.2ms | total_time    412s
+2026-05-06 18:18:52  step     370 | loss  1.5311 | lr 7.57e-06 |   227.9k tok/s | gnorm  0.55 | 0.083B toks | step_took 1035.7ms | total_time    423s
+2026-05-06 18:19:04  step     380 | loss  1.5531 | lr 7.10e-06 |   193.8k tok/s | gnorm  0.57 | 0.086B toks | step_took 1185.0ms | total_time    435s
+2026-05-06 18:19:15  step     390 | loss  1.4769 | lr 6.64e-06 |   219.0k tok/s | gnorm  0.52 | 0.088B toks | step_took 1141.0ms | total_time    446s
+2026-05-06 18:19:26  step     400 | loss  1.5186 | lr 6.19e-06 |   186.9k tok/s | gnorm  0.53 | 0.090B toks | step_took 1107.9ms | total_time    457s
+2026-05-06 18:19:27  ──────────────────────────────  EVAL step 400  val_loss=1.5312  ──────────────────────────────
+2026-05-06 18:19:27  EVAL step=400 val_loss=1.531163
+2026-05-06 18:19:29    ✓ Checkpoint saved → sft/best.pt  [BEST]  (step 400)
+2026-05-06 18:19:29  CHECKPOINT step=400 path=sft/best.pt  [BEST]
+2026-05-06 18:19:41  step     410 | loss  1.5228 | lr 5.76e-06 |   214.8k tok/s | gnorm  0.56 | 0.092B toks | step_took 1165.4ms | total_time    471s
+2026-05-06 18:19:52  step     420 | loss  1.5026 | lr 5.35e-06 |   216.0k tok/s | gnorm  0.55 | 0.095B toks | step_took 1096.2ms | total_time    483s
+2026-05-06 18:20:03  step     430 | loss  1.5239 | lr 4.95e-06 |   175.9k tok/s | gnorm  0.53 | 0.097B toks | step_took 1127.8ms | total_time    494s
+2026-05-06 18:20:14  step     440 | loss  1.5204 | lr 4.58e-06 |   213.0k tok/s | gnorm  0.57 | 0.099B toks | step_took 1104.8ms | total_time    505s
+2026-05-06 18:20:26  step     450 | loss  1.4979 | lr 4.23e-06 |   206.5k tok/s | gnorm  0.53 | 0.101B toks | step_took 1177.7ms | total_time    517s
+2026-05-06 18:20:37  step     460 | loss  1.5062 | lr 3.90e-06 |   209.7k tok/s | gnorm  0.55 | 0.104B toks | step_took 1129.3ms | total_time    528s
+2026-05-06 18:20:49  step     470 | loss  1.4942 | lr 3.59e-06 |   176.1k tok/s | gnorm  0.52 | 0.106B toks | step_took 1155.8ms | total_time    540s
+2026-05-06 18:21:00  step     480 | loss  1.5110 | lr 3.31e-06 |   159.3k tok/s | gnorm  0.54 | 0.108B toks | step_took 1091.4ms | total_time    551s
+2026-05-06 18:21:11  step     490 | loss  1.5064 | lr 3.06e-06 |   229.4k tok/s | gnorm  0.56 | 0.111B toks | step_took 1134.7ms | total_time    562s
+2026-05-06 18:21:23  step     500 | loss  1.4941 | lr 2.83e-06 |   209.4k tok/s | gnorm  0.57 | 0.113B toks | step_took 1111.4ms | total_time    574s
+2026-05-06 18:21:25    ✓ Checkpoint saved → sft/step_0000500.pt  (step 500)
+2026-05-06 18:21:25  CHECKPOINT step=500 path=sft/step_0000500.pt
+2026-05-06 18:21:36  step     510 | loss  1.5111 | lr 2.62e-06 |   228.5k tok/s | gnorm  0.55 | 0.115B toks | step_took 1132.8ms | total_time    587s
+2026-05-06 18:21:47  step     520 | loss  1.5041 | lr 2.45e-06 |   209.9k tok/s | gnorm  0.55 | 0.117B toks | step_took 1089.0ms | total_time    598s
+2026-05-06 18:21:58  step     530 | loss  1.5163 | lr 2.30e-06 |   203.8k tok/s | gnorm  0.54 | 0.120B toks | step_took 1100.2ms | total_time    609s
+2026-05-06 18:22:10  step     540 | loss  1.4944 | lr 2.18e-06 |   230.2k tok/s | gnorm  0.56 | 0.122B toks | step_took 1137.6ms | total_time    620s
+2026-05-06 18:22:21  step     550 | loss  1.4963 | lr 2.09e-06 |   203.7k tok/s | gnorm  0.55 | 0.124B toks | step_took 1177.3ms | total_time    632s
+2026-05-06 18:22:32  step     560 | loss  1.4917 | lr 2.03e-06 |   159.6k tok/s | gnorm  0.52 | 0.127B toks | step_took 1124.3ms | total_time    643s
+2026-05-06 18:22:44  step     570 | loss  1.5038 | lr 2.00e-06 |   214.5k tok/s | gnorm  0.55 | 0.129B toks | step_took 1148.3ms | total_time    654s
+2026-05-06 18:22:52  ──────────────────────────────  EVAL step 574  val_loss=1.5203  ──────────────────────────────
+2026-05-06 18:22:52  EVAL step=574 val_loss=1.520257
+2026-05-06 18:22:52    ✓ Checkpoint saved → sft/final.pt  [FINAL]  (step 574)
+2026-05-06 18:22:52  CHECKPOINT step=574 path=sft/final.pt  [FINAL]
+2026-05-06 18:22:52  
+═════════════════════════════════════════════════════════════════
+  Training complete  —  0.130B tokens  in 0h 11m 2s
+═════════════════════════════════════════════════════════════════
+

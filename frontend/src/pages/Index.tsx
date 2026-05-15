@@ -33,7 +33,7 @@ const Index = () => {
           onParametersChange={setParameters}
         />
         <div className="flex-1 flex flex-col min-w-0">
-          <ChatArea messages={messages} isLoading={isLoading} />
+          <ChatArea messages={messages} isLoading={isLoading} onSuggestion={(text) => sendMessage(text)} />
           <ChatInput
             value={inputValue}
             onChange={setInputValue}
