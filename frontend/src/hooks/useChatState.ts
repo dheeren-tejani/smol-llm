@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { ChatMessage, ChatParameters, DEFAULT_PARAMETERS, API_BASE_URL } from '@/lib/types';
+import { ChatMessage, ChatParameters, DEFAULT_PARAMETERS } from '@/lib/types';
 
 export function useChatState() {
   const [messages, setMessages]     = useState<ChatMessage[]>([]);
@@ -34,7 +34,7 @@ export function useChatState() {
     try {
       abortRef.current = new AbortController();
 
-      const res = await fetch(`${API_BASE_URL}/generate/stream`, {
+      const res = await fetch('/.netlify/functions/chat', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({

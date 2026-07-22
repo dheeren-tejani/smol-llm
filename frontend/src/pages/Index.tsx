@@ -4,6 +4,7 @@ import { ChatHeader } from '@/components/ChatHeader';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import { ChatArea } from '@/components/ChatArea';
 import { ChatInput } from '@/components/ChatInput';
+import { MODAL_BACKEND_URL } from '@/lib/types';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

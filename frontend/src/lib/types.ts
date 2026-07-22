@@ -23,4 +23,8 @@ export const DEFAULT_PARAMETERS: ChatParameters = {
   range_epsilon: 0.1,
 };
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Used ONLY for the unauthenticated warm-up ping to /health (see Index.tsx).
+// Real chat traffic goes through /.netlify/functions/chat instead — that
+// function holds the Modal URL + auth secret server-side, never exposed
+// to the browser. Do NOT use this for /generate or /generate/stream calls.
+export const MODAL_BACKEND_URL = import.meta.env.VITE_MODAL_BACKEND_URL || '';
