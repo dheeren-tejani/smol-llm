@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChatState } from '@/hooks/useChatState';
 import { ChatHeader } from '@/components/ChatHeader';
 import { ChatSidebar } from '@/components/ChatSidebar';
