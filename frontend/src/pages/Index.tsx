@@ -9,7 +9,7 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-      fetch(`${import.meta.env.MODAL_BASE_URL}/health`).catch(() => {});
+      fetch(`${import.meta.env.MODAL_BACKEND_URL}/health`).catch(() => {});
     }, []);
   
   const {
