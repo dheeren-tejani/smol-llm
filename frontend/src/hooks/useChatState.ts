@@ -1,136 +1,138 @@
-import { useState, useRef, useCallback } from 'react';
-
-export interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
+import { useState, useCallback, useRef } from 'react';
+import { ChatMessage, ChatParameters, DEFAULT_PARAMETERS, API_BASE_URL } from '@/lib/types';
 
 export function useChatState() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const [messages, setMessages]     = useState<ChatMessage[]>([]);
+  const [parameters, setParameters] = useState<ChatParameters>(DEFAULT_PARAMETERS);
+  const [isLoading, setIsLoading]   = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const abortRef = useRef<AbortController | null>(null);
 
-  const sendMessage = useCallback(async (prompt: string, systemPrompt?: string) => {
-    if (!prompt.trim()) return;
+  const sendMessage = useCallback(async (content: string) => {
+    if (!content.trim() || isLoading) return;
 
-    // Cancel any ongoing request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
+    const userMessage: ChatMessage = {
+      id:        crypto.randomUUID(),
+      role:      'user',
+      content:   content.trim(),
+      timestamp: new Date(),
+    };
 
-    const userMessage: Message = { role: 'user', content: prompt };
-    setMessages((prev) => [...prev, userMessage]);
+    // Placeholder assistant message that we'll fill in token by token
+    const assistantId = crypto.randomUUID();
+    const assistantMessage: ChatMessage = {
+      id:        assistantId,
+      role:      'assistant',
+      content:   '',
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage, assistantMessage]);
+    setInputValue('');
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Point to the Netlify Proxy Function
-      const response = await fetch('/.netlify/functions/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt,
-          system: systemPrompt,
-          // Optional: Add max_tokens, temperature, etc. here if your UI supports it
+      abortRef.current = new AbortController();
+
+      const res = await fetch(`${API_BASE_URL}/generate/stream`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          prompt: content.trim(),
+          ...parameters,
         }),
-        signal: abortControllerRef.current.signal,
+        signal: abortRef.current.signal,
       });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Rate limit exceeded. Please wait a moment and try again.');
-        }
-        if (response.status === 503) {
-          throw new Error('Server is currently at capacity or starting up. Please retry shortly.');
-        }
-        throw new Error(`Server error: ${response.status}`);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Response body is not readable');
+      // Read the SSE stream
+      const reader  = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = '';
 
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-      let buffer = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-      // Add a placeholder message for the assistant's streaming text
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        // Append new chunk to buffer and process complete SSE lines
+        buffer += decoder.decode(value, { stream: true });
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          buffer += decoder.decode(value, { stream: true });
-          
-          // SSE events are separated by double newlines
-          const parts = buffer.split('\n\n');
-          // Keep the last partial chunk in the buffer
-          buffer = parts.pop() || '';
+        // SSE lines are separated by \n\n
+        const parts = buffer.split('\n\n');
+        // Keep the last (possibly incomplete) chunk in the buffer
+        buffer = parts.pop() ?? '';
 
-          for (const part of parts) {
-            if (part.startsWith('data: ')) {
-              const dataStr = part.slice(6);
-              try {
-                const data = JSON.parse(dataStr);
-                
-                if (data.error) {
-                  throw new Error(data.error);
-                }
+        for (const part of parts) {
+          // Each part looks like:  "data: {...}"
+          const line = part.trim();
+          if (!line.startsWith('data:')) continue;
 
-                if (data.token) {
-                  setMessages((prev) => {
-                    const newMessages = [...prev];
-                    const lastIndex = newMessages.length - 1;
-                    newMessages[lastIndex] = {
-                      ...newMessages[lastIndex],
-                      content: newMessages[lastIndex].content + data.token,
-                    };
-                    return newMessages;
-                  });
-                }
-              } catch (e) {
-                console.warn('Failed to parse SSE JSON chunk', e);
-              }
-            }
+          const jsonStr = line.slice('data:'.length).trim();
+          if (!jsonStr) continue;
+
+          let msg: Record<string, unknown>;
+          try {
+            msg = JSON.parse(jsonStr);
+          } catch {
+            continue;
+          }
+
+          if (typeof msg.token === 'string') {
+            // Append the new token to the assistant message
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === assistantId
+                  ? { ...m, content: m.content + msg.token }
+                  : m
+              )
+            );
+          } else if (msg.done) {
+            // Generation complete — nothing extra needed, message is already built
+          } else if (typeof msg.error === 'string') {
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === assistantId
+                  ? { ...m, content: `⚠️ ${msg.error}` }
+                  : m
+              )
+            );
           }
         }
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        console.log('Request cancelled');
-      } else {
-        console.error('Chat error:', err);
-        setError(err.message || 'An unexpected error occurred.');
-      }
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+
+      // Replace the empty assistant placeholder with an error message
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === assistantId
+            ? { ...m, content: '⚠️ Something went wrong. Please check your backend connection.' }
+            : m
+        )
+      );
     } finally {
       setIsLoading(false);
-      abortControllerRef.current = null;
     }
-  }, []);
-
-  const stopGeneration = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-      setIsLoading(false);
-    }
-  }, []);
+  }, [isLoading, parameters]);
 
   const clearChat = useCallback(() => {
+    abortRef.current?.abort();
     setMessages([]);
-    setError(null);
+    setInputValue('');
+    setIsLoading(false);
   }, []);
 
   return {
     messages,
+    parameters,
+    setParameters,
     isLoading,
-    error,
+    inputValue,
+    setInputValue,
     sendMessage,
-    stopGeneration,
     clearChat,
   };
 }
