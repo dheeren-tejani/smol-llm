@@ -7,7 +7,7 @@ llm/
 frontend/node_modules
 
 # Model Folder
-backend/model
+backend/models
 
 # Envs
 .env

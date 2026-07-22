@@ -1,11 +1,9 @@
 """
 inference.py — Generation engine for the backend.
-Updated to use the Senku model (HF tokenizer, RoPE, RMSNorm, SwiGLU).
-
-Two generation methods:
-  • generate()        — blocking, returns the full text at once.
-  • generate_stream() — pushes each decoded token into an asyncio.Queue
-                        as it is produced, enabling SSE streaming.
+Now aligned with the SFT stack: tiktoken chat tokenizer (sft_tokenizer.py),
+KV-cache decoding (one token per step, not a full recompute), fp32-only,
+RangeFlow unchanged. Checkpoint loading strips optimizer state the same way
+standalone_inference.py does.
 """
 
 import asyncio
@@ -17,236 +15,128 @@ from typing import Optional
 
 import torch
 import torch.nn.functional as F
-from transformers import AutoTokenizer
 
-from config import (
-    ACTIVE_CONFIG,
-    CHECKPOINT_PATH,
-    MODEL_PRESETS,
-    SPECIAL_TOKENS,
-    TOKENIZER_NAME,
-    TOKENIZER_REAL_VOCAB,
-    ModelConfig,
-)
+from config import CHECKPOINT_PATH, FORCE_FP32, ModelConfig
 from model import GPT
+from sft_tokenizer import (
+    build_chat_tokenizer,
+    render_prompt_for_generation,
+    decode_response,
+    ROLE_TOKEN_ID,
+    END_ID,
+    MIN_VOCAB_SIZE_REQUIRED,
+)
 
 logger = logging.getLogger("dheeren's_chat.inference")
 
-
-# ---------------------------------------------------------------------------
-# Request schema
-# ---------------------------------------------------------------------------
-
 DEFAULT_SYSTEM = (
-    "You are Senku, a helpful and knowledgeable AI assistant. "
+    "You are a helpful and knowledgeable AI assistant. "
     "Answer clearly and concisely."
 )
-
-
-def _build_chat_prompt(user_message: str, system: str = DEFAULT_SYSTEM) -> str:
-    """
-    Wrap a user message in the ChatML format the SFT model was trained on:
-
-        <|system|>
-        {system}
-        <|user|>
-        {user_message}
-        <|assistant|>
-
-    The model generates from the open <|assistant|> tag onward.
-    """
-    return f"<|system|>\n{system}\n<|user|>\n{user_message}\n<|assistant|>\n"
 
 
 @dataclass
 class GenerationRequest:
     prompt:             str
-    system:             str   = DEFAULT_SYSTEM   # overridable system prompt
-    max_tokens:         int   = 512
+    system:             str   = DEFAULT_SYSTEM
+    max_tokens:         int   = 256
     temperature:        float = 0.7
     top_p:              float = 0.9
-    top_k:              int   = 50
-    repetition_penalty: float = 1.1
+    top_k:              int   = 40
+    repetition_penalty: float = 1.15
     range_epsilon:      float = 0.1
 
 
 # ---------------------------------------------------------------------------
-# Tokenizer loader
+# Checkpoint loader — strip optimizer state, rebuild ModelConfig from the
+# checkpoint itself (same "never guess the architecture" rule sft_train.py
+# and standalone_inference.py both follow).
 # ---------------------------------------------------------------------------
 
-def _load_tokenizer(name: str):
-    """
-    Load HuggingFace tokenizer with Senku special tokens added.
-
-    Returns (tokenizer, encode_fn, safe_decode_fn, stop_ids, real_vocab_size).
-
-    safe_decode_fn  — never raises; silently drops ids outside the real vocab.
-    stop_ids        — set of int ids that should halt generation.
-    """
-    tok = AutoTokenizer.from_pretrained(name)
-    tok.add_special_tokens({"additional_special_tokens": SPECIAL_TOKENS})
-
-    real_vocab = len(tok)
-    eos_id     = tok.eos_token_id or 0
-    end_id     = tok.convert_tokens_to_ids("<|end|>") or eos_id
-    user_id    = tok.convert_tokens_to_ids("<|user|>") or eos_id
-    stop_ids   = {eos_id, end_id, user_id}
-
-    logger.info(
-        "[tokenizer] HuggingFace '%s'  vocab=%d  eos=%d  stop_ids=%s",
-        name, real_vocab, eos_id, sorted(stop_ids),
-    )
-
-    def encode(text: str) -> list[int]:
-        return tok.encode(text, add_special_tokens=False)
-
-    def safe_decode(ids: list[int]) -> str:
-        try:
-            return tok.decode([i for i in ids if i < real_vocab])
-        except Exception:
-            return ""
-
-    return tok, encode, safe_decode, stop_ids, real_vocab
-
-
-# ---------------------------------------------------------------------------
-# Checkpoint loader
-# ---------------------------------------------------------------------------
-
-def _load_checkpoint(
-    ckpt_path: str,
-    device: str,
-    preset_override: Optional[str] = None,
-) -> tuple[GPT, ModelConfig, dict]:
-    """
-    Load a Senku GPT checkpoint.
-
-    Config priority:
-      1. preset_override (MODEL_PRESET env var / explicit arg)
-      2. 'config' dict stored in the checkpoint
-      3. 'train_cfg' fallback
-      4. ACTIVE_CONFIG default from config.py
-    """
-    import os, dataclasses
+def _load_checkpoint(ckpt_path: str, device: str) -> tuple[GPT, ModelConfig]:
+    import os
     if not os.path.exists(ckpt_path):
         raise RuntimeError(f"Checkpoint not found at '{ckpt_path}'.")
 
-    logger.info("[checkpoint] Loading  %s", ckpt_path)
-    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+    logger.info("[checkpoint] Loading %s", ckpt_path)
+    raw = torch.load(ckpt_path, map_location="cpu", weights_only=False)
 
-    # ── Resolve ModelConfig ────────────────────────────────────────────
-    if preset_override and preset_override in MODEL_PRESETS:
-        cfg = MODEL_PRESETS[preset_override]
-        logger.info("[checkpoint] Using preset override: %s", preset_override)
-
-    elif "config" in ckpt and isinstance(ckpt["config"], dict):
-        valid_fields = {f.name for f in dataclasses.fields(ModelConfig)}
-        filtered = {k: v for k, v in ckpt["config"].items() if k in valid_fields}
-        cfg = ModelConfig(**filtered)
-        logger.info(
-            "[checkpoint] Restored ModelConfig from checkpoint "
-            "(filtered %d non-model keys).",
-            len(ckpt["config"]) - len(filtered),
+    if "model" not in raw or "config" not in raw:
+        raise RuntimeError(
+            f"'{ckpt_path}' doesn't look like a checkpoint.py-produced file "
+            f"(missing 'model'/'config'). Found keys: {list(raw.keys())}"
         )
 
-    elif "train_cfg" in ckpt:
-        tc = ckpt["train_cfg"]
-        cfg = ModelConfig(
-            vocab_size  = tc.get("vocab_size",  50304),
-            d_model     = tc.get("d_model",     768),
-            n_layers    = tc.get("n_layers",    12),
-            n_heads     = tc.get("n_heads",     12),
-            max_seq_len = tc.get("max_seq_len", 1024),
+    model_cfg = ModelConfig(**raw["config"])
+    if model_cfg.vocab_size < MIN_VOCAB_SIZE_REQUIRED:
+        raise RuntimeError(
+            f"model_cfg.vocab_size={model_cfg.vocab_size} < {MIN_VOCAB_SIZE_REQUIRED} "
+            f"required for the chat special tokens — this checkpoint predates SFT."
         )
-        logger.info("[checkpoint] Inferred ModelConfig from train_cfg.")
 
-    else:
-        cfg = ACTIVE_CONFIG
-        logger.info("[checkpoint] Using ACTIVE_CONFIG from config.py.")
+    model = GPT(model_cfg)
+    model.load_state_dict(raw["model"], strict=True)
+    del raw
 
-    # ── Build & load model ─────────────────────────────────────────────
-    model = GPT(cfg).to(device)
-    state = ckpt.get("model", ckpt.get("model_state_dict", ckpt))
-
-    # Strip DDP / torch.compile prefixes if present
-    state = {
-        k.replace("_orig_mod.", "").replace("module.", ""): v
-        for k, v in state.items()
-    }
-
-    missing, unexpected = model.load_state_dict(state, strict=False)
-    if missing:
-        logger.warning("Missing keys (%d): %s%s", len(missing), missing[:5],
-                       "…" if len(missing) > 5 else "")
-    if unexpected:
-        logger.warning("Unexpected keys (%d): %s%s", len(unexpected), unexpected[:5],
-                       "…" if len(unexpected) > 5 else "")
-
+    dtype = torch.float32 if FORCE_FP32 else torch.float32  # fp32 only, always
+    model = model.to(device=device, dtype=dtype)
     model.eval()
 
-    n_params    = model.parameter_count()
-    n_params_ne = model.parameter_count(non_embedding=True)
-    step        = ckpt.get("step", "?")
-    val_loss    = ckpt.get("val_loss", None)
-    tokens_seen = ckpt.get("tokens_seen", None)
-
+    step     = None
+    val_loss = None
     logger.info(
-        "[checkpoint] step=%s  params=%.1fM  (non-embed=%.1fM)  "
-        "val_loss=%s  tokens_seen=%s",
-        step, n_params / 1e6, n_params_ne / 1e6,
-        val_loss,
-        f"{tokens_seen/1e9:.2f}B" if tokens_seen else "?",
+        "[checkpoint] loaded — d_model=%d n_layers=%d n_heads=%d max_seq_len=%d  params=%.1fM",
+        model_cfg.d_model, model_cfg.n_layers, model_cfg.n_heads, model_cfg.max_seq_len,
+        model.count_params(non_embedding=True) / 1e6,
     )
-
-    return model, cfg, ckpt
+    return model, model_cfg
 
 
 # ---------------------------------------------------------------------------
 # Sampling helpers
 # ---------------------------------------------------------------------------
 
-def _apply_repetition_penalty(
-    logits: torch.Tensor,          # (vocab_size,) — 1-D, already on device
-    recent_ids: list[int],
-    penalty: float,
-    window: int,
-) -> torch.Tensor:
-    """
-    Vectorised repetition penalty (CTRL formulation).
-    Avoids a Python loop + per-scalar device sync.
-    """
+def _apply_repetition_penalty(logits, recent_ids, penalty, window):
     if penalty == 1.0 or not recent_ids:
         return logits
-
-    ids = torch.tensor(
-        list(set(recent_ids[-window:])),
-        dtype=torch.long,
-        device=logits.device,
-    )
-    ids = ids[ids < logits.size(0)]   # safety: ignore out-of-vocab ids
+    ids = torch.tensor(list(set(recent_ids[-window:])), dtype=torch.long, device=logits.device)
+    ids = ids[ids < logits.size(0)]
     if ids.numel() == 0:
         return logits
-
     logits = logits.clone()
     scores = logits[ids]
     logits[ids] = torch.where(scores > 0, scores / penalty, scores * penalty)
     return logits
 
 
-def _top_k_filter(logits: torch.Tensor, top_k: int) -> torch.Tensor:
-    k         = min(top_k, logits.size(-1))
+def _top_k_filter(logits, top_k):
+    k = min(top_k, logits.size(-1))
     threshold = torch.topk(logits, k).values[..., -1, None]
     return logits.masked_fill(logits < threshold, float("-inf"))
 
 
-def _top_p_filter(logits: torch.Tensor, top_p: float) -> torch.Tensor:
+def _top_p_filter(logits, top_p):
     sorted_logits, sorted_idx = torch.sort(logits, descending=True)
-    cum_probs                 = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
-    remove_mask               = cum_probs > top_p
-    remove_mask[..., 1:]      = remove_mask[..., :-1].clone()
-    remove_mask[..., 0]       = False
-    sorted_logits[remove_mask] = float("-inf")
-    return sorted_logits.scatter(1, sorted_idx, sorted_logits)
+    probs = F.softmax(sorted_logits, dim=-1)
+    cum_probs = torch.cumsum(probs, dim=-1)
+    remove = cum_probs - probs > top_p
+    sorted_logits = sorted_logits.masked_fill(remove, float("-inf"))
+    return torch.full_like(logits, float("-inf")).scatter(-1, sorted_idx, sorted_logits)
+
+
+def sample_next_token(logits, recent_ids, temperature, top_k, top_p, repetition_penalty):
+    logits = logits.clone()
+    logits[MIN_VOCAB_SIZE_REQUIRED:] = float("-inf")   # never-trained padding rows
+
+    logits = _apply_repetition_penalty(logits, recent_ids, repetition_penalty, window=64)
+    logits = logits / max(temperature, 1e-8)
+    if top_k > 0:
+        logits = _top_k_filter(logits.unsqueeze(0), top_k).squeeze(0)
+    if top_p < 1.0:
+        logits = _top_p_filter(logits.unsqueeze(0), top_p).squeeze(0)
+
+    probs = F.softmax(logits, dim=-1)
+    return torch.multinomial(probs, num_samples=1).item()
 
 
 # ---------------------------------------------------------------------------
@@ -254,29 +144,14 @@ def _top_p_filter(logits: torch.Tensor, top_p: float) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 class InferenceEngine:
-    """
-    Singleton-style inference engine.  Create once; call generate() or
-    generate_stream() many times.
-
-    A threading.Lock prevents concurrent requests from corrupting the
-    RangeFlow anchor state shared across generation steps.
-    """
-
     def __init__(self) -> None:
-        self._lock      = threading.Lock()
-        self._device    = self._pick_device()
-        self._model: GPT | None   = None
-        self._cfg:   ModelConfig | None = None
-        self._encode_fn = None
-        self._decode_fn = None
-        self._stop_ids: set[int] = set()
-        self._real_vocab: int    = TOKENIZER_REAL_VOCAB
-        self._pad_mask: torch.Tensor | None = None
+        self._lock   = threading.Lock()
+        self._device = self._pick_device()
+        self._model:  Optional[GPT]         = None
+        self._cfg:    Optional[ModelConfig] = None
+        self._enc     = None
+        self._ready   = False
         logger.info("InferenceEngine created — device: %s", self._device.upper())
-
-    # ------------------------------------------------------------------
-    # Initialisation
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _pick_device() -> str:
@@ -287,217 +162,113 @@ class InferenceEngine:
         return "cpu"
 
     def load_model(self) -> None:
-        """Build model, load checkpoint, and set up tokenizer.  Call once at startup."""
-        logger.info("=" * 60)
-        logger.info("🚀  RangeFlow Inference Engine — loading Senku model")
-        logger.info("    Device     : %s", self._device.upper())
-        logger.info("    Checkpoint : %s", CHECKPOINT_PATH)
-        logger.info("=" * 60)
-
-        # ── Tokenizer ─────────────────────────────────────────────────
-        _tok, encode, decode, stop_ids, real_vocab = _load_tokenizer(TOKENIZER_NAME)
-        self._encode_fn  = encode
-        self._decode_fn  = decode
-        self._stop_ids   = stop_ids
-        self._real_vocab = real_vocab
-
-        # ── Model ─────────────────────────────────────────────────────
+        """Heavy lifting — call this off the event loop (see main.py's
+        lifespan) so server startup itself stays sub-second."""
         t0 = time.perf_counter()
-        model, cfg, _ckpt = _load_checkpoint(CHECKPOINT_PATH, self._device)
+
+        # tiktoken load is essentially free (no network, no HF download) —
+        # this alone removes most of the old startup latency vs AutoTokenizer.
+        self._enc = build_chat_tokenizer()
+
+        model, cfg = _load_checkpoint(CHECKPOINT_PATH, self._device)
         self._model = model
         self._cfg   = cfg
-        logger.info(
-            "Model ready in %.2f s — %.1f M parameters",
-            time.perf_counter() - t0,
-            model.parameter_count() / 1e6,
-        )
+        self._ready = True
 
-        # ── Padding-slot logit mask ────────────────────────────────────
-        # Slots real_vocab … cfg.vocab_size-1 are untrained padding rows;
-        # mask them to -inf so they're never sampled.
-        pad_mask = torch.zeros(cfg.vocab_size, device=self._device)
-        if real_vocab < cfg.vocab_size:
-            pad_mask[real_vocab:] = float("-inf")
-        self._pad_mask = pad_mask
-
-        logger.info("✅  Engine ready — accepting requests")
-        logger.info("=" * 60)
+        logger.info("✅ Engine ready in %.2fs — accepting requests", time.perf_counter() - t0)
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
     def generate(self, req: GenerationRequest) -> dict:
-        """Blocking generation — returns dict with response, tokens_generated, elapsed_ms, device."""
-        if self._model is None:
-            raise RuntimeError("Model is not loaded.  Call load_model() first.")
+        if not self._ready:
+            raise RuntimeError("Model is not loaded yet.")
         with self._lock:
             return self._run_generation(req, stream_queue=None, loop=None)
 
-    def generate_stream(
-        self,
-        req: GenerationRequest,
-        queue: asyncio.Queue,
-        loop: asyncio.AbstractEventLoop,
-    ) -> None:
-        """
-        Streaming generation — pushes tokens into *queue* as they are produced.
-        Queue message format:  ("token", str) | ("done", int) | ("error", str)
-        Called from a ThreadPoolExecutor (blocks).
-        """
-        if self._model is None:
+    def generate_stream(self, req: GenerationRequest, queue: asyncio.Queue,
+                         loop: asyncio.AbstractEventLoop) -> None:
+        if not self._ready:
             loop.call_soon_threadsafe(queue.put_nowait, ("error", "Model not loaded"))
             return
         with self._lock:
             self._run_generation(req, stream_queue=queue, loop=loop)
 
     # ------------------------------------------------------------------
-    # Core generation loop
+    # Core generation — prefill once (capture), then decode ONE token
+    # per step via the KV cache (guard). This replaces the old approach
+    # of recomputing the full sequence every step.
     # ------------------------------------------------------------------
 
     @torch.inference_mode()
-    def _run_generation(
-        self,
-        req: GenerationRequest,
-        stream_queue: Optional[asyncio.Queue],
-        loop: Optional[asyncio.AbstractEventLoop],
-    ) -> dict:
-        """
-        Two-phase RangeFlow autoregressive generation.
-
-        Phase A (capture)  — one forward pass over the full prompt to record
-                             the K/V bounding-box anchors in every attention layer.
-        Phase B (guard)    — token-by-token generation with K/V clamped to the
-                             epsilon-expanded anchor box.
-        """
+    def _run_generation(self, req: GenerationRequest,
+                         stream_queue: Optional[asyncio.Queue],
+                         loop: Optional[asyncio.AbstractEventLoop]) -> dict:
         streaming = stream_queue is not None
-
-        logger.info("-" * 50)
-        logger.info("📥  Generation [%s]", "stream" if streaming else "full")
-        logger.info("    Prompt     : %r  (%d chars)", req.prompt[:80], len(req.prompt))
-        logger.info("    max_tokens=%d  temp=%.3f  top_k=%d  top_p=%.3f  "
-                    "rep=%.3f  ε=%.3f",
-                    req.max_tokens, req.temperature, req.top_k,
-                    req.top_p, req.repetition_penalty, req.range_epsilon)
-        logger.info("-" * 50)
-
         t_start = time.perf_counter()
-        model   = self._model
-        cfg     = self._cfg
-        device  = self._device
+        model, cfg, device = self._model, self._cfg, self._device
 
-        # Determine autocast dtype
-        # bf16 on CUDA, fp16 on MPS, fp32 on CPU
-        if device == "cuda":
-            amp_dtype = torch.bfloat16
-        elif device == "mps":
-            amp_dtype = torch.float16
-        else:
-            amp_dtype = torch.float32
+        messages = [{"role": "system", "content": req.system},
+                    {"role": "user", "content": req.prompt}]
+        prompt_ids = render_prompt_for_generation(messages, self._enc)
 
-        # ── Encode prompt (wrapped in ChatML format) ───────────────────
-        chat_prompt = _build_chat_prompt(req.prompt, system=req.system)
-        prompt_ids  = self._encode_fn(chat_prompt)
-        if not prompt_ids:
-            logger.warning("Empty prompt — returning empty response")
-            if streaming:
-                loop.call_soon_threadsafe(stream_queue.put_nowait, ("done", 0))
-            return {"response": "", "tokens_generated": 0, "elapsed_ms": 0.0, "device": device}
+        if len(prompt_ids) >= cfg.max_seq_len:
+            raise RuntimeError(
+                f"Prompt ({len(prompt_ids)} tokens) doesn't fit in "
+                f"max_seq_len={cfg.max_seq_len}."
+            )
 
-        tokens = torch.tensor(prompt_ids, dtype=torch.long, device=device).unsqueeze(0)
-        logger.info("    Prompt tokens: %d", tokens.size(1))
+        max_new = min(req.max_tokens, cfg.max_seq_len - len(prompt_ids) - 1)
 
-        generated_ids: list[int] = []
+        kv_cache = model.new_kv_cache(batch_size=1, device=device, dtype=torch.float32)
 
-        # ── Phase A: CAPTURE ──────────────────────────────────────────
-        logger.debug("Phase A: capture — establishing RangeFlow anchor")
+        # ── Phase A: prefill + capture ─────────────────────────────────
         model.clear_anchors()
         model.set_epsilon(req.range_epsilon)
         model.set_range_mode("capture")
 
-        with torch.amp.autocast(device_type=device, dtype=amp_dtype,
-                                enabled=(device in ("cuda", "mps"))):
-            model(tokens)
+        x = torch.tensor([prompt_ids], dtype=torch.long, device=device)
+        logits, _ = model(x, kv_cache=kv_cache, start_pos=0)
+        next_logits = logits[0, -1, :].float()
 
-        logger.debug("Phase A complete — anchor captured across %d layers", cfg.n_layers)
-
-        # ── Phase B: GUARD — autoregressive generation ────────────────
-        logger.debug("Phase B: guard — autoregressive generation begins")
+        # ── Phase B: guard — one new token per forward pass ────────────
         model.set_range_mode("guard")
 
-        idx = tokens   # running context window
-
-        for step in range(req.max_tokens):
-
-            # Crop to max_seq_len
-            idx_cond = idx[:, -cfg.max_seq_len:]
-
-            # Forward
-            with torch.amp.autocast(device_type=device, dtype=amp_dtype,
-                                    enabled=(device in ("cuda", "mps"))):
-                logits_all = model(idx_cond)
-
-            logits = logits_all[0, -1, :].float()   # (vocab_size,) — fp32 for stability
-
-            # Mask padding slots
-            logits = logits + self._pad_mask
-
-            # Sampling stack
-            logits = _apply_repetition_penalty(
-                logits,
-                recent_ids = prompt_ids + generated_ids,
-                penalty    = req.repetition_penalty,
-                window     = 64,
+        generated_ids: list[int] = []
+        for step in range(max_new):
+            token_id = sample_next_token(
+                next_logits, prompt_ids + generated_ids,
+                req.temperature, req.top_k, req.top_p, req.repetition_penalty,
             )
-            if req.temperature != 1.0:
-                logits = logits / max(req.temperature, 1e-8)
-            if req.top_k > 0:
-                logits = _top_k_filter(logits.unsqueeze(0), req.top_k).squeeze(0)
-            if req.top_p < 1.0:
-                logits = _top_p_filter(logits.unsqueeze(0), req.top_p).squeeze(0)
 
-            probs    = F.softmax(logits, dim=-1)
-            token_id = torch.multinomial(probs, num_samples=1).item()
-
-            # Stop check
-            if token_id in self._stop_ids or token_id >= self._real_vocab:
-                logger.debug("    [step %d] stop token %d — halting", step, token_id)
+            if token_id == END_ID:
                 break
 
             generated_ids.append(token_id)
-            idx = torch.cat(
-                [idx, torch.tensor([[token_id]], dtype=torch.long, device=device)],
-                dim=1,
-            )
 
-            # Stream the new token immediately
             if streaming:
-                # Incremental decode to handle multi-byte UTF-8 split across tokens
-                current_text = self._decode_fn(generated_ids)
-                prev_text    = self._decode_fn(generated_ids[:-1]) if len(generated_ids) > 1 else ""
+                current_text = decode_response(generated_ids, self._enc)
+                prev_text    = decode_response(generated_ids[:-1], self._enc) if len(generated_ids) > 1 else ""
                 new_chars    = current_text[len(prev_text):]
                 if new_chars:
                     loop.call_soon_threadsafe(stream_queue.put_nowait, ("token", new_chars))
 
-            if (step + 1) % 50 == 0:
-                logger.debug("    [step %d] %d tokens so far", step + 1, len(generated_ids))
+            if kv_cache.capacity_left() < 1:
+                break
 
-        # ── Wrap up ───────────────────────────────────────────────────
-        elapsed_ms = (time.perf_counter() - t_start) * 1000
-        logger.info(
-            "✅  Generation complete — %d tokens in %.1f ms  (%.1f tok/s)",
-            len(generated_ids), elapsed_ms,
-            len(generated_ids) / max(elapsed_ms / 1000, 1e-6),
-        )
+            x = torch.tensor([[token_id]], dtype=torch.long, device=device)
+            logits, _ = model(x, kv_cache=kv_cache, start_pos=kv_cache.length)
+            next_logits = logits[0, -1, :].float()
 
         model.set_range_mode("standard")
+        elapsed_ms = (time.perf_counter() - t_start) * 1000
 
         if streaming:
             loop.call_soon_threadsafe(stream_queue.put_nowait, ("done", len(generated_ids)))
             return {}
 
-        response_text = self._decode_fn(generated_ids)
-        logger.info("    Response preview: %r …", response_text[:80])
+        response_text = decode_response(generated_ids, self._enc)
         return {
             "response":         response_text,
             "tokens_generated": len(generated_ids),
@@ -505,18 +276,13 @@ class InferenceEngine:
             "device":           device,
         }
 
-    # ------------------------------------------------------------------
-    # Health
-    # ------------------------------------------------------------------
-
     @property
     def is_ready(self) -> bool:
-        return self._model is not None
+        return self._ready
 
     @property
     def device(self) -> str:
         return self._device
 
 
-# Module-level singleton
 engine = InferenceEngine()

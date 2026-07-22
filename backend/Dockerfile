@@ -41,7 +41,7 @@ print(f"Tokenizer '{os.environ['TOKENIZER_NAME']}' cached successfully.")
 EOF
 
 # Cloud Run injects PORT automatically; default to 8000 for local docker run
-ENV PORT=8000
+ENV PORT=7860
 ENV HOST=0.0.0.0
 
 # Disable Python output buffering so logs appear immediately in Cloud Run

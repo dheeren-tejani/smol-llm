@@ -10,7 +10,7 @@ A GPT-style language model trained from scratch on 22B tokens of [Cosmopedia](ht
 
 This is a portfolio project documenting the full pipeline of building a small language model — from raw data download, through pretraining and SFT, to a deployed chat interface. The model is not production-grade; it lacks the RLHF polish of commercial models. It does surprisingly well at storytelling and open-ended generation.
 
-The model is called **Senku**. It was trained by Dheeren.
+The model was trained by Dheeren.
 
 ---
 
@@ -61,16 +61,40 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 
 ### SFT (Supervised Fine-Tuning)
 
-- **Dataset**: [OpenHermes 2.5](https://huggingface.co/datasets/teknium/OpenHermes-2.5) — filtered to 50k strict single-turn (user + assistant) conversations
-- **Format**: ChatML (`<|system|>`, `<|user|>`, `<|assistant|>`, `<|end|>`)
-- **Loss masking**: only assistant tokens are trained on; prompt tokens are masked to -100
-- **Filtering**:
-  - Drops multi-turn records
-  - Drops any assistant turn containing robotic AI-identity boilerplate ("As an AI...", "I was created by OpenAI...", etc.)
-  - Replaces explicit model names (ChatGPT, Claude, Gemini, etc.) with "Senku"
-  - Injects ~50 explicit identity Q&A pairs ("Who are you?" → "I'm Senku...")
-- **Peak LR**: 2e-5 (10× lower than pretraining)
-- **Epochs**: 3
+* **Dataset**: HuggingFaceTB/smol-smoltalk (curated mix designed specifically for <1B parameter models). Built-in fallbacks exist for `no_robots`, `alpaca`, or custom `.jsonl` data.
+
+
+* **Format**: Custom GPT-2 vocabulary extension utilizing special chat tokens (`<|system|>`, `<|user|>`, `<|assistant|>`, `<|end|>`, `<|pad|>`) to properly demarcate turns.
+
+
+* **Loss Masking**: The model only computes loss on the assistant's content and the explicit `<|end|>` stop token. All role tags, user/system prompt tokens, and right-padded `<|pad|>` tokens are masked to `-100`.
+
+
+* **Filtering**:
+* Enforces strict single-turn formatting by dropping any conversation that does not have exactly 2 or 3 messages (User → Assistant or System → User → Assistant).
+
+
+* Drops examples where any single turn exceeds a 200-word limit to prevent capacity crowding.
+
+
+* Drops examples containing heavy code execution or standard AI alignment refusals (e.g., "def ", "```python", "As an AI", "I cannot fulfill").
+
+
+* Eliminates duplicate conversations across the dataset using SHA-1 hashing.
+
+
+
+
+* **Batching Strategy**: Avoids naive sequence packing to prevent cross-conversation attention leakage. Places exactly one conversation per sequence and right-pads to the batch's longest example. Utilizes a Length-Grouped Sampler to cluster similar-length examples and drastically reduce padding waste.
+
+
+* **Peak LR**: `5e-5`, cosine-decaying down to `5e-6`. Employs a fresh AdamW optimizer to discard pretraining momentum states.
+
+
+* **Epochs**: 3 epochs by default. Incorporates an early stopping patience of 5 evaluation events without validation loss improvement.
+
+
+* **Regularization**: Optionally supports NEFTune (Noisy Embeddings Fine-Tuning) to add uniform noise to token embeddings during the training pass.
 
 ---
 
@@ -94,6 +118,11 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 │   ├── model.py                 # Inference model (adds RangeFlow to training model)
 │   ├── inference.py             # InferenceEngine (blocking + SSE streaming)
 │   ├── config.py                # All env-var config (model preset, paths, server, defaults)
+│   ├── auth.py                  # for authetication
+│   ├── modal_app.py             # for deployment on modal
+│   ├── modal_volume_logger.py   # for storing logs on volume storage
+│   ├── rate_limit.py            # for protection from DoS and greedy users
+│   ├── sft_tokenizer.py         # imports tokenizer setup for the model
 │   ├── main.py                  # FastAPI app (health, /generate, /generate/stream, /config)
 │   ├── Dockerfile               # CPU-only Docker image (bakes model + tokenizer)
 │   └── .env.example             # Local dev environment template
@@ -111,6 +140,9 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 │   │   │   └── useChatState.ts  # All chat state + SSE streaming logic
 │   │   └── lib/
 │   │       └── types.ts         # Shared types + API_BASE_URL
+│   ├── netlify/
+│   │   ├── functions/
+│   │   │   ├── chat.ts          # acts as a middleware 
 │
 └── README.md
 ```
