@@ -7,6 +7,11 @@ import { ChatInput } from '@/components/ChatInput';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+      fetch(`${import.meta.env.MODAL_BASE_URL}/health`).catch(() => {});
+    }, []);
+  
   const {
     messages,
     parameters,
