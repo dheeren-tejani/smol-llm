@@ -37,8 +37,8 @@ DEFAULT_SYSTEM = (
 
 @dataclass
 class GenerationRequest:
-    prompt:             str
-    system:             str   = DEFAULT_SYSTEM
+    messages:           list   # [{"role": "user"|"assistant", "content": str}, ...]
+    system:             str   = ""
     max_tokens:         int   = 256
     temperature:        float = 0.7
     top_p:              float = 0.9
@@ -90,6 +90,23 @@ def _load_checkpoint(ckpt_path: str, device: str) -> tuple[GPT, ModelConfig]:
         model.count_params(non_embedding=True) / 1e6,
     )
     return model, model_cfg
+
+def _fit_messages_to_context(messages: list, enc, max_seq_len: int, max_new_tokens: int) -> list:
+    """Drops the oldest user/assistant pair(s) until the rendered prompt +
+    room for max_new_tokens fits max_seq_len. Keeps a leading system turn
+    if present. Mutates and returns a NEW list — never touches the caller's."""
+    messages = list(messages)
+    has_system = bool(messages) and messages[0]["role"] == "system"
+    floor = 2 if has_system else 1
+
+    while len(messages) > floor:
+        ids = render_prompt_for_generation(messages, enc)
+        if len(ids) + max_new_tokens < max_seq_len:
+            break
+        drop_at = 1 if has_system else 0
+        del messages[drop_at:drop_at + 2]
+
+    return messages
 
 
 # ---------------------------------------------------------------------------
@@ -203,23 +220,31 @@ class InferenceEngine:
 
     @torch.inference_mode()
     def _run_generation(self, req: GenerationRequest,
-                         stream_queue: Optional[asyncio.Queue],
-                         loop: Optional[asyncio.AbstractEventLoop]) -> dict:
+                     stream_queue: Optional[asyncio.Queue],
+                     loop: Optional[asyncio.AbstractEventLoop]) -> dict:
         streaming = stream_queue is not None
         t_start = time.perf_counter()
         model, cfg, device = self._model, self._cfg, self._device
-
-        messages = [{"role": "system", "content": req.system},
-                    {"role": "user", "content": req.prompt}]
-        prompt_ids = render_prompt_for_generation(messages, self._enc)
-
+    
+        full_messages = []
+        if req.system.strip():
+            full_messages.append({"role": "system", "content": req.system})
+        full_messages.extend(req.messages)
+    
+        max_new_requested = req.max_tokens
+        full_messages = _fit_messages_to_context(
+            full_messages, self._enc, cfg.max_seq_len, max_new_requested,
+        )
+    
+        prompt_ids = render_prompt_for_generation(full_messages, self._enc)
+    
         if len(prompt_ids) >= cfg.max_seq_len:
             raise RuntimeError(
-                f"Prompt ({len(prompt_ids)} tokens) doesn't fit in "
-                f"max_seq_len={cfg.max_seq_len}."
+                f"Conversation ({len(prompt_ids)} tokens) doesn't fit in "
+                f"max_seq_len={cfg.max_seq_len} even after trimming."
             )
-
-        max_new = min(req.max_tokens, cfg.max_seq_len - len(prompt_ids) - 1)
+    
+        max_new = min(max_new_requested, cfg.max_seq_len - len(prompt_ids) - 1)
 
         kv_cache = model.new_kv_cache(batch_size=1, device=device, dtype=torch.float32)
 

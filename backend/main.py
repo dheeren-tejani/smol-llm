@@ -8,6 +8,7 @@ import logging
 import sys
 import time
 from contextlib import asynccontextmanager
+from typing import List, Literal
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -22,7 +23,7 @@ from config import (
     MAX_CONCURRENT_GENERATIONS, TRUST_FORWARDED_FOR,
     AUTH_SECRET_KEY, AUTH_KEY_VALUE, AUTH_TOKEN_MAX_AGE_SECONDS, AUTH_ENABLED,
 )
-from inference import DEFAULT_SYSTEM, GenerationRequest, engine
+from inference import GenerationRequest, engine
 from rate_limit import SlidingWindowRateLimiter, ConcurrencyGuard, get_client_key
 from modal_volume_logger import ModalVolumeRequestLogger, RequestLogEntry
 from auth import make_verify_auth_token
@@ -91,21 +92,19 @@ async def lifespan(app: FastAPI):
 
     load_task  = asyncio.create_task(_load())
     prune_task = asyncio.create_task(_prune_loop())
-    await req_logger.start_background_flush()   # <-- was missing: logs would only
-                                                  #     flush at 200 buffered entries
+    await req_logger.start_background_flush()
 
     yield
 
     load_task.cancel()
     prune_task.cancel()
-    await req_logger.stop_and_final_flush()      # <-- was missing: flush + commit
-                                                  #     whatever's left on shutdown
+    await req_logger.stop_and_final_flush()
     logger.info("Backend — shutting down")
 
 
 app = FastAPI(
     title="LLM Backend",
-    version="3.2.1",
+    version="4.0.0",
     lifespan=lifespan,
 )
 
@@ -118,9 +117,14 @@ app.add_middleware(
 )
 
 
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(..., min_length=1, max_length=4096)
+
+
 class GenerateRequest(BaseModel):
-    prompt: str = Field(..., min_length=1, max_length=4096)
-    system: str = Field(default=DEFAULT_SYSTEM, max_length=2048)
+    messages: List[ChatTurn] = Field(..., min_length=1, max_length=40)
+    system: str = Field(default="", max_length=2048)
 
     max_tokens:         int   = Field(default=GenerationDefaults.MAX_TOKENS, ge=1, le=1024)
     temperature:        float = Field(default=GenerationDefaults.TEMPERATURE, ge=0.01, le=5.0)
@@ -129,18 +133,17 @@ class GenerateRequest(BaseModel):
     repetition_penalty: float = Field(default=GenerationDefaults.REPETITION_PENALTY, ge=1.0, le=3.0)
     range_epsilon:      float = Field(default=GenerationDefaults.RANGE_EPSILON, ge=0.0, le=2.0)
 
-    @field_validator("prompt")
+    @field_validator("messages")
     @classmethod
-    def strip_prompt(cls, v: str) -> str:
-        v = v.strip()
-        if not v:
-            raise ValueError("prompt must not be empty")
+    def last_must_be_user(cls, v: List[ChatTurn]) -> List[ChatTurn]:
+        if v[-1].role != "user":
+            raise ValueError("The last message must be from the user.")
         return v
 
     @field_validator("system")
     @classmethod
     def strip_system(cls, v: str) -> str:
-        return v.strip() or DEFAULT_SYSTEM
+        return v.strip()
 
 
 class GenerateResponse(BaseModel):
@@ -226,7 +229,8 @@ async def get_config():
 
 def _make_req(body: GenerateRequest) -> GenerationRequest:
     return GenerationRequest(
-        prompt=body.prompt, system=body.system,
+        messages=[{"role": m.role, "content": m.content} for m in body.messages],
+        system=body.system,
         max_tokens=body.max_tokens, temperature=body.temperature,
         top_p=body.top_p, top_k=body.top_k,
         repetition_penalty=body.repetition_penalty,
@@ -261,6 +265,29 @@ def _check_rate_limit_and_capacity(request: Request) -> str:
     return client_key
 
 
+def _base_log_entry(request: Request, endpoint: str, client_key: str, body: GenerateRequest) -> RequestLogEntry:
+    """Shared log-entry builder for both endpoints — fixes the old bug where
+    both routes referenced a nonexistent body.prompt (the schema is
+    messages-based now, not a single prompt string)."""
+    return RequestLogEntry(
+        request_id=ModalVolumeRequestLogger.new_id(),
+        timestamp=ModalVolumeRequestLogger.now_iso(),
+        endpoint=endpoint,
+        client_key=client_key,
+        status="ok",
+        prompt=body.messages[-1].content,   # just the latest user turn, for a quick glance
+        system=body.system,
+        params={
+            "message_count": len(body.messages),
+            "max_tokens": body.max_tokens, "temperature": body.temperature,
+            "top_p": body.top_p, "top_k": body.top_k,
+            "repetition_penalty": body.repetition_penalty,
+            "range_epsilon": body.range_epsilon,
+        },
+        user_agent=request.headers.get("user-agent"),
+    )
+
+
 @app.post("/generate", response_model=GenerateResponse, tags=["inference"],
           dependencies=[Depends(verify_auth_token)])
 async def generate(body: GenerateRequest, request: Request):
@@ -269,24 +296,8 @@ async def generate(body: GenerateRequest, request: Request):
 
     client_key = _check_rate_limit_and_capacity(request)
 
-    request_id = ModalVolumeRequestLogger.new_id()
     t0 = time.perf_counter()
-    entry = RequestLogEntry(
-        request_id=request_id,
-        timestamp=ModalVolumeRequestLogger.now_iso(),
-        endpoint="/generate",
-        client_key=client_key,
-        status="ok",
-        prompt=body.prompt,
-        system=body.system,
-        params={
-            "max_tokens": body.max_tokens, "temperature": body.temperature,
-            "top_p": body.top_p, "top_k": body.top_k,
-            "repetition_penalty": body.repetition_penalty,
-            "range_epsilon": body.range_epsilon,
-        },
-        user_agent=request.headers.get("user-agent"),
-    )
+    entry = _base_log_entry(request, "/generate", client_key, body)
 
     try:
         result = await asyncio.to_thread(engine.generate, _make_req(body))
@@ -320,24 +331,8 @@ async def generate_stream(body: GenerateRequest, request: Request):
     loop = asyncio.get_event_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
-    request_id = ModalVolumeRequestLogger.new_id()
     t0 = time.perf_counter()
-    entry = RequestLogEntry(
-        request_id=request_id,
-        timestamp=ModalVolumeRequestLogger.now_iso(),
-        endpoint="/generate/stream",
-        client_key=client_key,
-        status="ok",
-        prompt=body.prompt,
-        system=body.system,
-        params={
-            "max_tokens": body.max_tokens, "temperature": body.temperature,
-            "top_p": body.top_p, "top_k": body.top_k,
-            "repetition_penalty": body.repetition_penalty,
-            "range_epsilon": body.range_epsilon,
-        },
-        user_agent=request.headers.get("user-agent"),
-    )
+    entry = _base_log_entry(request, "/generate/stream", client_key, body)
 
     def run_in_thread():
         try:
