@@ -26,12 +26,7 @@ export function ChatHeader({ sidebarOpen, onToggleSidebar, onNewChat }: ChatHead
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground">
-          D
-        </div>
-        <span className="text-sm font-medium hidden sm:inline">Dheeren's LLM (Senku)</span>
-      </div>
+      
 
       <div className="flex items-center gap-2">
       </div>

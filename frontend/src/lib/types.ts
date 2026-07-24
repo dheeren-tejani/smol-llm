@@ -27,4 +27,4 @@ export const DEFAULT_PARAMETERS: ChatParameters = {
 // Real chat traffic goes through /.netlify/functions/chat instead — that
 // function holds the Modal URL + auth secret server-side, never exposed
 // to the browser. Do NOT use this for /generate or /generate/stream calls.
-export const MODAL_BACKEND_URL = import.meta.env.VITE_MODAL_BACKEND_URL || '';
+export const MODAL_BASE_URL = import.meta.env.VITE_MODAL_BASE_URL || '';

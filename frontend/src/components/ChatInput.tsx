@@ -31,13 +31,6 @@ export function ChatInput({ value, onChange, onSend, disabled, maxLength = 1024 
     <div className="shrink-0 bg-background px-4 py-3">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-end gap-2 bg-card border border-border rounded-xl px-3 py-2 transition-shadow duration-200 focus-within:shadow-[0_0_0_1px_hsl(0_0%_20%)]">
-          <button
-            className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200 shrink-0 mb-0.5"
-            aria-label="Attach file"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-
           <textarea
             ref={textareaRef}
             value={value}
@@ -48,7 +41,7 @@ export function ChatInput({ value, onChange, onSend, disabled, maxLength = 1024 
             placeholder="Message...."
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[36px] max-h-[160px] py-1.5 disabled:opacity-50"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[36px] max-h-[160px] py-1.5 pl-4 disabled:opacity-50"
           />
 
           <button

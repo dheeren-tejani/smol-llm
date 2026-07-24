@@ -4,13 +4,13 @@ import { ChatHeader } from '@/components/ChatHeader';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import { ChatArea } from '@/components/ChatArea';
 import { ChatInput } from '@/components/ChatInput';
-import { MODAL_BACKEND_URL } from '@/lib/types';
+import { MODAL_BASE_URL } from '@/lib/types'; 
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-      fetch(`${import.meta.env.MODAL_BACKEND_URL}/health`).catch(() => {});
+      fetch(`${MODAL_BASE_URL}/health`, { cache: 'no-store' }).catch(() => {});
     }, []);
   
   const {

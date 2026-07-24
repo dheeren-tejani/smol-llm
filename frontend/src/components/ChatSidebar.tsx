@@ -47,7 +47,7 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
           {/* About */}
           <div className="px-4 py-6">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              <span className="text-foreground font-medium">Dheeren's Chat</span> is a portfolio project developed by Dheeren. Trained the model from scratch with cosmopedia, finetuned it OpenHermes, created both backend and frontend server with UI for chatting, feel free to test it.
+              <span className="text-foreground font-medium">Dheeren's Chat</span> is a portfolio project developed by Dheeren. Trained the model from scratch with cosmopedia, performed SFT, created both backend and frontend server with UI for chatting, feel free to test it.
             </p>
             <p className="text-sm text-muted-foreground mt-3">
               GitHub:{' '}
