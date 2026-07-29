@@ -122,7 +122,7 @@ export function ChatSidebar({ open, onClose, parameters, onParametersChange }: C
               <ParameterControl
                 label="Range Epsilon"
                 description="Minimum probability threshold for token filtering. Decides how many logits are most relevant to the prompt."
-                value={0.2}
+                value={parameters.range_epsilon}
                 min={0}
                 max={1}
                 step={0.01}

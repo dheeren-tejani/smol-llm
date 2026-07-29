@@ -4,7 +4,7 @@ model.py — Transformer architecture
   • RoPE     (rotary position embeddings)
   • SwiGLU   (d_ff = 2.67 × d_model)
   • Flash SDPA (causal, via F.scaled_dot_product_attention)
-  • Weight tying (embed ↔ lm_head)
+  • Weight tying is off
   • No biases anywhere (like LLaMA)
 """
 

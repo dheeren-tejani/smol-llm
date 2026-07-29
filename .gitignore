@@ -16,3 +16,6 @@ frontend/.env
 
 # Python cache
 __pycache__
+
+# Logs
+chat_metrics.jsonl

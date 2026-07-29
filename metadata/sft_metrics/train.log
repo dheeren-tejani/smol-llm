@@ -1,0 +1,675 @@
+2026-07-27 09:44:04  Run directory : logs/smol-lm-sft_20260727_094404
+2026-07-27 09:44:04  Text log      : logs/smol-lm-sft_20260727_094404/train.log
+2026-07-27 09:44:04  Metrics CSV   : logs/smol-lm-sft_20260727_094404/metrics.csv
+2026-07-27 09:44:04  GPU : NVIDIA H100 80GB HBM3
+2026-07-27 09:44:04  VRAM: 85.0 GB
+2026-07-27 09:44:04  
+Reading architecture from base_model/best_raw.pt ...
+2026-07-27 09:44:05  
+═════════════════════════════════════════════════════════════════
+2026-07-27 09:44:05    Run : smol-lm-sft
+2026-07-27 09:44:05  ═════════════════════════════════════════════════════════════════
+2026-07-27 09:44:05    vocab_size                50304
+2026-07-27 09:44:05    d_model                   768
+2026-07-27 09:44:05    n_layers                  12
+2026-07-27 09:44:05    n_heads                   12
+2026-07-27 09:44:05    d_ff                      2048
+2026-07-27 09:44:05    max_seq_len               1024
+2026-07-27 09:44:05    dropout                   0.0
+2026-07-27 09:44:05    train_data                data/train_sft.pt
+2026-07-27 09:44:05    val_data                  data/val_sft.pt
+2026-07-27 09:44:05    batch_size                32
+2026-07-27 09:44:05    grad_accum_steps          8
+2026-07-27 09:44:05    max_lr                    0.0003
+2026-07-27 09:44:05    min_lr                    3e-05
+2026-07-27 09:44:05    weight_decay              0.1
+2026-07-27 09:44:05    beta1                     0.9
+2026-07-27 09:44:05    beta2                     0.95
+2026-07-27 09:44:05    grad_clip                 1.0
+2026-07-27 09:44:05    label_smoothing           0.0
+2026-07-27 09:44:05    neftune_alpha             0.0
+2026-07-27 09:44:05    epochs                    2
+2026-07-27 09:44:05    warmup_ratio              0.03
+2026-07-27 09:44:05    ckpt_dir                  checkpoints_sft_v2
+2026-07-27 09:44:05    ckpt_every                200
+2026-07-27 09:44:05    keep_last_n               3
+2026-07-27 09:44:05    eval_every                200
+2026-07-27 09:44:05    eval_batches              40
+2026-07-27 09:44:05    sample_every              200
+2026-07-27 09:44:05    early_stop_patience       5
+2026-07-27 09:44:05    log_every                 10
+2026-07-27 09:44:05    run_name                  smol-lm-sft
+2026-07-27 09:44:05    num_workers               4
+2026-07-27 09:44:05    length_grouped_batching   True
+2026-07-27 09:44:05    compile                   False
+2026-07-27 09:44:05  ═════════════════════════════════════════════════════════════════
+
+2026-07-27 09:44:07  Parameters: 123.6M (non-embedding)
+2026-07-27 09:44:07  
+Initializing from pretrained checkpoint base_model/best_raw.pt (model weights only — fresh AdamW state, see footgun #4)
+2026-07-27 09:44:08  WARNING: 5 chat special-token embeddings (ids 50257-50261) were reserved but never trained during pretraining. SFT will train them from scratch over the next few hundred steps — expected, low-risk (5 of 50304 rows).
+2026-07-27 09:44:08  5 chat special-token embeddings (ids 50257-50261) were reserved but never trained during pretraining. SFT will train them from scratch over the next few hundred steps — expected, low-risk (5 of 50304 rows).
+2026-07-27 09:44:08  
+Loading SFT data...
+2026-07-27 09:44:32  
+Training started  —  2,086 steps  |  0.55B tokens
+
+2026-07-27 09:44:32  Steps/epoch: 1,043  |  Epochs: 2  |  Total steps: 2,086  |  Warmup steps: 62
+2026-07-27 09:44:37  step       0 | loss  2.2575 | lr 4.84e-06 |   209.8k tok/s | gnorm  3.01 | 0.000B toks | step_took 1249.3ms | total_time      1s
+2026-07-27 09:44:37      (epoch 1/2  resp_tok_acc= 54.5%  avg_pad_frac= 2.1%)
+2026-07-27 09:44:44  step      10 | loss  1.9133 | lr 5.32e-05 |   388.8k tok/s | gnorm  1.02 | 0.002B toks | step_took 674.3ms | total_time      8s
+2026-07-27 09:44:44      (epoch 1/2  resp_tok_acc= 58.6%  avg_pad_frac= 2.1%)
+2026-07-27 09:44:51  step      20 | loss  2.0323 | lr 1.02e-04 |   360.8k tok/s | gnorm  1.87 | 0.003B toks | step_took 726.6ms | total_time     15s
+2026-07-27 09:44:51      (epoch 1/2  resp_tok_acc= 57.6%  avg_pad_frac= 5.1%)
+2026-07-27 09:44:57  step      30 | loss  1.6691 | lr 1.50e-04 |   521.0k tok/s | gnorm  1.25 | 0.004B toks | step_took 503.1ms | total_time     22s
+2026-07-27 09:44:57      (epoch 1/2  resp_tok_acc= 62.2%  avg_pad_frac= 2.8%)
+2026-07-27 09:45:04  step      40 | loss  1.7089 | lr 1.98e-04 |   408.3k tok/s | gnorm  0.93 | 0.005B toks | step_took 642.1ms | total_time     28s
+2026-07-27 09:45:04      (epoch 1/2  resp_tok_acc= 61.0%  avg_pad_frac= 2.6%)
+2026-07-27 09:45:10  step      50 | loss  1.6107 | lr 2.47e-04 |   423.4k tok/s | gnorm  0.86 | 0.007B toks | step_took 619.2ms | total_time     35s
+2026-07-27 09:45:10      (epoch 1/2  resp_tok_acc= 62.5%  avg_pad_frac= 2.1%)
+2026-07-27 09:45:17  step      60 | loss  1.6589 | lr 2.95e-04 |   411.2k tok/s | gnorm  1.07 | 0.008B toks | step_took 637.5ms | total_time     41s
+2026-07-27 09:45:17      (epoch 1/2  resp_tok_acc= 60.2%  avg_pad_frac= 2.2%)
+2026-07-27 09:45:23  step      70 | loss  1.5719 | lr 3.00e-04 |   501.4k tok/s | gnorm  1.16 | 0.009B toks | step_took 522.9ms | total_time     47s
+2026-07-27 09:45:23      (epoch 1/2  resp_tok_acc= 60.9%  avg_pad_frac= 4.9%)
+2026-07-27 09:45:29  step      80 | loss  1.6172 | lr 3.00e-04 |   387.1k tok/s | gnorm  0.81 | 0.010B toks | step_took 677.2ms | total_time     54s
+2026-07-27 09:45:29      (epoch 1/2  resp_tok_acc= 61.3%  avg_pad_frac= 2.0%)
+2026-07-27 09:45:36  step      90 | loss  1.6768 | lr 3.00e-04 |   312.6k tok/s | gnorm  0.84 | 0.012B toks | step_took 838.7ms | total_time     60s
+2026-07-27 09:45:36      (epoch 1/2  resp_tok_acc= 59.2%  avg_pad_frac= 1.8%)
+2026-07-27 09:45:43  step     100 | loss  1.7331 | lr 3.00e-04 |   297.4k tok/s | gnorm  0.89 | 0.013B toks | step_took 881.5ms | total_time     67s
+2026-07-27 09:45:43      (epoch 1/2  resp_tok_acc= 59.0%  avg_pad_frac= 1.8%)
+2026-07-27 09:45:49  step     110 | loss  1.5356 | lr 3.00e-04 |   487.4k tok/s | gnorm  1.04 | 0.014B toks | step_took 537.8ms | total_time     73s
+2026-07-27 09:45:49      (epoch 1/2  resp_tok_acc= 61.0%  avg_pad_frac= 2.5%)
+2026-07-27 09:45:55  step     120 | loss  1.5533 | lr 2.99e-04 |   385.2k tok/s | gnorm  0.77 | 0.016B toks | step_took 680.5ms | total_time     80s
+2026-07-27 09:45:55      (epoch 1/2  resp_tok_acc= 61.8%  avg_pad_frac= 1.8%)
+2026-07-27 09:46:02  step     130 | loss  1.5222 | lr 2.99e-04 |   435.2k tok/s | gnorm  0.89 | 0.017B toks | step_took 602.3ms | total_time     86s
+2026-07-27 09:46:02      (epoch 1/2  resp_tok_acc= 63.5%  avg_pad_frac= 3.3%)
+2026-07-27 09:46:08  step     140 | loss  1.5543 | lr 2.99e-04 |   658.6k tok/s | gnorm  0.95 | 0.018B toks | step_took 398.0ms | total_time     93s
+2026-07-27 09:46:08      (epoch 1/2  resp_tok_acc= 61.8%  avg_pad_frac= 3.1%)
+2026-07-27 09:46:15  step     150 | loss  1.7619 | lr 2.99e-04 |   418.7k tok/s | gnorm  1.39 | 0.019B toks | step_took 626.1ms | total_time     99s
+2026-07-27 09:46:15      (epoch 1/2  resp_tok_acc= 59.6%  avg_pad_frac= 9.7%)
+2026-07-27 09:46:21  step     160 | loss  1.4189 | lr 2.98e-04 |   416.5k tok/s | gnorm  0.74 | 0.021B toks | step_took 629.4ms | total_time    105s
+2026-07-27 09:46:21      (epoch 1/2  resp_tok_acc= 65.6%  avg_pad_frac= 2.2%)
+2026-07-27 09:46:27  step     170 | loss  1.3272 | lr 2.98e-04 |   524.6k tok/s | gnorm  0.76 | 0.022B toks | step_took 499.7ms | total_time    111s
+2026-07-27 09:46:27      (epoch 1/2  resp_tok_acc= 67.1%  avg_pad_frac= 2.2%)
+2026-07-27 09:46:33  step     180 | loss  1.5278 | lr 2.98e-04 |   494.2k tok/s | gnorm  0.97 | 0.023B toks | step_took 530.4ms | total_time    118s
+2026-07-27 09:46:33      (epoch 1/2  resp_tok_acc= 65.4%  avg_pad_frac= 4.9%)
+2026-07-27 09:46:39  step     190 | loss  1.3851 | lr 2.97e-04 |   597.7k tok/s | gnorm  0.87 | 0.024B toks | step_took 438.6ms | total_time    123s
+2026-07-27 09:46:39      (epoch 1/2  resp_tok_acc= 67.6%  avg_pad_frac= 2.9%)
+2026-07-27 09:46:46  step     200 | loss  1.5619 | lr 2.97e-04 |   309.4k tok/s | gnorm  0.66 | 0.026B toks | step_took 847.3ms | total_time    130s
+2026-07-27 09:46:46      (epoch 1/2  resp_tok_acc= 61.3%  avg_pad_frac= 1.7%)
+2026-07-27 09:46:46  
+────────────────────────────── SAMPLING step 200 ──────────────────────────────
+2026-07-27 09:46:47  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:46:47  Reply : 'A black hole is a massive, cold, and solid-state material that has been around for thousands of years, but its properties have been unknown to us humans for millions of years. Since the Big Bang, many of the universe has been inhabited as a black hole, but the Big Bang has only made it a distant and mysterious event that continues to be a subject of debate in science and technology.'
+
+2026-07-27 09:46:47  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:46:47  Reply : 'The vast expanse of the ocean stretches out before you, its glassy waters a gentle lapping of the waves against the shore, and the vast expanse of the ocean stretches out to the horizon, its glassy emerald depths a gentle reminder of the vastness of our world.'
+
+2026-07-27 09:46:47  Prompt: "What's 17 * 24?"
+2026-07-27 09:46:47  Reply : '17 * 24 is 17.'
+
+2026-07-27 09:46:47  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:46:47  Reply : '* Set specific goals for each day, such as reading a book, attending a workshop, or learning something new. Break down your goals into manageable daily goals.\n* Take regular breaks to refresh your mind. Even a few minutes of deep breathing can make a difference in your productivity over time.\n* Take short breaks throughout the day to refresh your mind. Short breaks can help you refresh your mind without getting overwhelmed.'
+
+2026-07-27 09:46:50  ──────────────────────────────  EVAL step 200  val_loss=1.5944  train_loss=1.5619  ──────────────────────────────
+2026-07-27 09:46:50  EVAL step=200 val_loss=1.594437
+2026-07-27 09:46:50      val_response_token_accuracy: 63.10%
+2026-07-27 09:47:05    ✓ Checkpoint saved → checkpoints_sft_v2/step_0000200.pt  (step 200)
+2026-07-27 09:47:05  CHECKPOINT step=200 path=checkpoints_sft_v2/step_0000200.pt
+2026-07-27 09:47:11  step     210 | loss  1.4741 | lr 2.96e-04 |   455.7k tok/s | gnorm  0.85 | 0.027B toks | step_took 575.2ms | total_time    155s
+2026-07-27 09:47:11      (epoch 1/2  resp_tok_acc= 65.2%  avg_pad_frac= 3.6%)
+2026-07-27 09:47:17  step     220 | loss  1.5702 | lr 2.96e-04 |   374.7k tok/s | gnorm  0.85 | 0.028B toks | step_took 699.6ms | total_time    161s
+2026-07-27 09:47:17      (epoch 1/2  resp_tok_acc= 61.8%  avg_pad_frac= 2.7%)
+2026-07-27 09:47:24  step     230 | loss  1.2863 | lr 2.95e-04 |   543.8k tok/s | gnorm  0.82 | 0.030B toks | step_took 482.1ms | total_time    168s
+2026-07-27 09:47:24      (epoch 1/2  resp_tok_acc= 66.0%  avg_pad_frac= 2.1%)
+2026-07-27 09:47:30  step     240 | loss  1.4863 | lr 2.95e-04 |   362.6k tok/s | gnorm  0.69 | 0.031B toks | step_took 722.9ms | total_time    174s
+2026-07-27 09:47:30      (epoch 1/2  resp_tok_acc= 62.1%  avg_pad_frac= 1.9%)
+2026-07-27 09:47:37  step     250 | loss  1.4799 | lr 2.94e-04 |   329.1k tok/s | gnorm  0.63 | 0.032B toks | step_took 796.5ms | total_time    181s
+2026-07-27 09:47:37      (epoch 1/2  resp_tok_acc= 62.8%  avg_pad_frac= 1.8%)
+2026-07-27 09:47:44  step     260 | loss  1.4082 | lr 2.94e-04 |   449.4k tok/s | gnorm  0.76 | 0.033B toks | step_took 583.3ms | total_time    188s
+2026-07-27 09:47:44      (epoch 1/2  resp_tok_acc= 63.8%  avg_pad_frac= 2.4%)
+2026-07-27 09:47:50  step     270 | loss  1.3985 | lr 2.93e-04 |   396.3k tok/s | gnorm  0.75 | 0.035B toks | step_took 661.5ms | total_time    194s
+2026-07-27 09:47:50      (epoch 1/2  resp_tok_acc= 63.9%  avg_pad_frac= 1.9%)
+2026-07-27 09:47:56  step     280 | loss  1.4458 | lr 2.92e-04 |   528.3k tok/s | gnorm  0.85 | 0.036B toks | step_took 496.2ms | total_time    201s
+2026-07-27 09:47:56      (epoch 1/2  resp_tok_acc= 66.1%  avg_pad_frac= 2.6%)
+2026-07-27 09:48:03  step     290 | loss  1.4398 | lr 2.92e-04 |   412.5k tok/s | gnorm  0.74 | 0.037B toks | step_took 635.5ms | total_time    207s
+2026-07-27 09:48:03      (epoch 1/2  resp_tok_acc= 63.2%  avg_pad_frac= 2.6%)
+2026-07-27 09:48:10  step     300 | loss  1.4108 | lr 2.91e-04 |   426.5k tok/s | gnorm  0.74 | 0.039B toks | step_took 614.7ms | total_time    214s
+2026-07-27 09:48:10      (epoch 1/2  resp_tok_acc= 64.4%  avg_pad_frac= 3.1%)
+2026-07-27 09:48:17  step     310 | loss  1.3126 | lr 2.90e-04 |   449.5k tok/s | gnorm  0.78 | 0.040B toks | step_took 583.2ms | total_time    221s
+2026-07-27 09:48:17      (epoch 1/2  resp_tok_acc= 67.3%  avg_pad_frac= 2.1%)
+2026-07-27 09:48:22  step     320 | loss  1.3115 | lr 2.89e-04 |   467.2k tok/s | gnorm  0.76 | 0.041B toks | step_took 561.1ms | total_time    227s
+2026-07-27 09:48:22      (epoch 1/2  resp_tok_acc= 66.7%  avg_pad_frac= 2.3%)
+2026-07-27 09:48:29  step     330 | loss  1.4710 | lr 2.88e-04 |   448.2k tok/s | gnorm  0.87 | 0.043B toks | step_took 584.9ms | total_time    233s
+2026-07-27 09:48:29      (epoch 1/2  resp_tok_acc= 64.0%  avg_pad_frac= 2.4%)
+2026-07-27 09:48:35  step     340 | loss  1.4947 | lr 2.88e-04 |   330.2k tok/s | gnorm  0.74 | 0.044B toks | step_took 793.8ms | total_time    239s
+2026-07-27 09:48:35      (epoch 1/2  resp_tok_acc= 61.6%  avg_pad_frac= 1.7%)
+2026-07-27 09:48:41  step     350 | loss  1.4259 | lr 2.87e-04 |   435.6k tok/s | gnorm  0.80 | 0.045B toks | step_took 601.8ms | total_time    245s
+2026-07-27 09:48:41      (epoch 1/2  resp_tok_acc= 63.3%  avg_pad_frac= 2.7%)
+2026-07-27 09:48:46  step     360 | loss  1.2832 | lr 2.86e-04 |   790.9k tok/s | gnorm  0.93 | 0.046B toks | step_took 331.4ms | total_time    251s
+2026-07-27 09:48:46      (epoch 1/2  resp_tok_acc= 69.0%  avg_pad_frac= 2.8%)
+2026-07-27 09:48:52  step     370 | loss  1.3013 | lr 2.85e-04 |   498.6k tok/s | gnorm  0.83 | 0.047B toks | step_took 525.8ms | total_time    256s
+2026-07-27 09:48:52      (epoch 1/2  resp_tok_acc= 68.4%  avg_pad_frac= 3.6%)
+2026-07-27 09:48:58  step     380 | loss  1.4368 | lr 2.84e-04 |   381.6k tok/s | gnorm  0.75 | 0.048B toks | step_took 686.9ms | total_time    262s
+2026-07-27 09:48:58      (epoch 1/2  resp_tok_acc= 63.4%  avg_pad_frac= 1.9%)
+2026-07-27 09:49:04  step     390 | loss  1.5203 | lr 2.83e-04 |   319.5k tok/s | gnorm  0.71 | 0.050B toks | step_took 820.6ms | total_time    268s
+2026-07-27 09:49:04      (epoch 1/2  resp_tok_acc= 61.6%  avg_pad_frac= 2.2%)
+2026-07-27 09:49:11  step     400 | loss  1.3168 | lr 2.82e-04 |   527.8k tok/s | gnorm  0.93 | 0.051B toks | step_took 496.6ms | total_time    275s
+2026-07-27 09:49:11      (epoch 1/2  resp_tok_acc= 66.9%  avg_pad_frac= 3.8%)
+2026-07-27 09:49:11  
+────────────────────────────── SAMPLING step 400 ──────────────────────────────
+2026-07-27 09:49:11  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:49:11  Reply : 'A black hole is a region in space where gravity is so strong that it can sink to a weight. The density of a black hole is about the size of the black hole, and it has a very strong gravitational force that pulls on it. This gravity pulls on everything in the black hole, including the fabric of the fabric of the fabric.'
+
+2026-07-27 09:49:12  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:49:12  Reply : "The ocean's soft, gentle caress, as if on a stormy evening, waves crashed against the shore, carrying with them the scent of salt and salt and the gentle waves of the ocean breeze."
+
+2026-07-27 09:49:12  Prompt: "What's 17 * 24?"
+2026-07-27 09:49:12  Reply : '17 * 24.'
+
+2026-07-27 09:49:12  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:49:12  Reply : '* Set clear goals for what you want to achieve, such as completing a specific project or learning a new skill.\n* Break large tasks into smaller, manageable steps to avoid feeling overwhelmed.\n* Take regular breaks to avoid mental fatigue and maintain focus.'
+
+2026-07-27 09:49:14  ──────────────────────────────  EVAL step 400  val_loss=1.5167  train_loss=1.3168  ──────────────────────────────
+2026-07-27 09:49:14  EVAL step=400 val_loss=1.516650
+2026-07-27 09:49:14      val_response_token_accuracy: 64.54%
+2026-07-27 09:49:27    ✓ Checkpoint saved → checkpoints_sft_v2/step_0000400.pt  (step 400)
+2026-07-27 09:49:27  CHECKPOINT step=400 path=checkpoints_sft_v2/step_0000400.pt
+2026-07-27 09:49:34  step     410 | loss  1.3666 | lr 2.81e-04 |   440.5k tok/s | gnorm  0.73 | 0.052B toks | step_took 595.2ms | total_time    298s
+2026-07-27 09:49:34      (epoch 1/2  resp_tok_acc= 63.9%  avg_pad_frac= 2.4%)
+2026-07-27 09:49:41  step     420 | loss  1.4199 | lr 2.80e-04 |   342.7k tok/s | gnorm  0.64 | 0.054B toks | step_took 764.9ms | total_time    305s
+2026-07-27 09:49:41      (epoch 1/2  resp_tok_acc= 64.0%  avg_pad_frac= 2.2%)
+2026-07-27 09:49:47  step     430 | loss  1.4622 | lr 2.79e-04 |   304.0k tok/s | gnorm  0.65 | 0.055B toks | step_took 862.2ms | total_time    311s
+2026-07-27 09:49:47      (epoch 1/2  resp_tok_acc= 63.7%  avg_pad_frac= 1.8%)
+2026-07-27 09:49:53  step     440 | loss  1.4460 | lr 2.77e-04 |   375.6k tok/s | gnorm  0.71 | 0.056B toks | step_took 697.8ms | total_time    317s
+2026-07-27 09:49:53      (epoch 1/2  resp_tok_acc= 64.3%  avg_pad_frac= 1.9%)
+2026-07-27 09:49:59  step     450 | loss  1.3467 | lr 2.76e-04 |   467.6k tok/s | gnorm  1.03 | 0.057B toks | step_took 560.6ms | total_time    323s
+2026-07-27 09:49:59      (epoch 1/2  resp_tok_acc= 66.2%  avg_pad_frac= 5.0%)
+2026-07-27 09:50:06  step     460 | loss  1.3916 | lr 2.75e-04 |   379.5k tok/s | gnorm  0.60 | 0.059B toks | step_took 690.8ms | total_time    330s
+2026-07-27 09:50:06      (epoch 1/2  resp_tok_acc= 66.1%  avg_pad_frac= 2.2%)
+2026-07-27 09:50:12  step     470 | loss  1.4121 | lr 2.74e-04 |   439.2k tok/s | gnorm  0.69 | 0.060B toks | step_took 596.8ms | total_time    337s
+2026-07-27 09:50:12      (epoch 1/2  resp_tok_acc= 64.1%  avg_pad_frac= 2.4%)
+2026-07-27 09:50:18  step     480 | loss  1.4993 | lr 2.73e-04 |   379.4k tok/s | gnorm  0.80 | 0.061B toks | step_took 690.9ms | total_time    343s
+2026-07-27 09:50:18      (epoch 1/2  resp_tok_acc= 62.9%  avg_pad_frac= 2.6%)
+2026-07-27 09:50:25  step     490 | loss  1.3292 | lr 2.71e-04 |   437.6k tok/s | gnorm  0.76 | 0.063B toks | step_took 599.0ms | total_time    350s
+2026-07-27 09:50:25      (epoch 1/2  resp_tok_acc= 66.6%  avg_pad_frac= 2.2%)
+2026-07-27 09:50:32  step     500 | loss  1.5580 | lr 2.70e-04 |   353.5k tok/s | gnorm  0.78 | 0.064B toks | step_took 741.6ms | total_time    357s
+2026-07-27 09:50:32      (epoch 1/2  resp_tok_acc= 61.6%  avg_pad_frac= 2.8%)
+2026-07-27 09:50:38  step     510 | loss  1.5276 | lr 2.69e-04 |   372.8k tok/s | gnorm  1.10 | 0.065B toks | step_took 703.2ms | total_time    363s
+2026-07-27 09:50:38      (epoch 1/2  resp_tok_acc= 64.2%  avg_pad_frac= 5.7%)
+2026-07-27 09:50:44  step     520 | loss  1.2789 | lr 2.67e-04 |   437.2k tok/s | gnorm  0.75 | 0.066B toks | step_took 599.6ms | total_time    369s
+2026-07-27 09:50:44      (epoch 1/2  resp_tok_acc= 66.7%  avg_pad_frac= 2.1%)
+2026-07-27 09:50:50  step     530 | loss  1.1110 | lr 2.66e-04 |   697.6k tok/s | gnorm  0.77 | 0.068B toks | step_took 375.8ms | total_time    375s
+2026-07-27 09:50:50      (epoch 1/2  resp_tok_acc= 72.5%  avg_pad_frac= 2.6%)
+2026-07-27 09:50:57  step     540 | loss  1.4560 | lr 2.65e-04 |   438.8k tok/s | gnorm  0.83 | 0.069B toks | step_took 597.4ms | total_time    381s
+2026-07-27 09:50:57      (epoch 1/2  resp_tok_acc= 63.0%  avg_pad_frac= 3.4%)
+2026-07-27 09:51:03  step     550 | loss  1.3359 | lr 2.63e-04 |   430.3k tok/s | gnorm  0.69 | 0.070B toks | step_took 609.3ms | total_time    387s
+2026-07-27 09:51:03      (epoch 1/2  resp_tok_acc= 64.9%  avg_pad_frac= 2.2%)
+2026-07-27 09:51:08  step     560 | loss  1.3779 | lr 2.62e-04 |   389.5k tok/s | gnorm  0.66 | 0.071B toks | step_took 673.0ms | total_time    393s
+2026-07-27 09:51:08      (epoch 1/2  resp_tok_acc= 64.3%  avg_pad_frac= 1.7%)
+2026-07-27 09:51:15  step     570 | loss  1.3854 | lr 2.60e-04 |   341.6k tok/s | gnorm  0.66 | 0.073B toks | step_took 767.4ms | total_time    400s
+2026-07-27 09:51:15      (epoch 1/2  resp_tok_acc= 63.2%  avg_pad_frac= 1.6%)
+2026-07-27 09:51:22  step     580 | loss  1.3102 | lr 2.59e-04 |   544.7k tok/s | gnorm  1.01 | 0.074B toks | step_took 481.3ms | total_time    406s
+2026-07-27 09:51:22      (epoch 1/2  resp_tok_acc= 67.9%  avg_pad_frac= 4.6%)
+2026-07-27 09:51:28  step     590 | loss  1.4370 | lr 2.57e-04 |   339.4k tok/s | gnorm  0.71 | 0.075B toks | step_took 772.4ms | total_time    412s
+2026-07-27 09:51:28      (epoch 1/2  resp_tok_acc= 63.7%  avg_pad_frac= 1.8%)
+2026-07-27 09:51:35  step     600 | loss  1.2508 | lr 2.56e-04 |   445.4k tok/s | gnorm  0.66 | 0.077B toks | step_took 588.6ms | total_time    419s
+2026-07-27 09:51:35      (epoch 1/2  resp_tok_acc= 67.1%  avg_pad_frac= 2.0%)
+2026-07-27 09:51:35  
+────────────────────────────── SAMPLING step 600 ──────────────────────────────
+2026-07-27 09:51:35  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:51:35  Reply : 'A black hole is a region of space where the gravitational pull of its gravity becomes so strong that nothing can escape. It is formed by the collapse of massive stars or clusters of gas in the black hole, which are formed due to the collapse of massive stars. Black holes are found in the outer regions of the universe, such as the outer regions of our solar system, and are thought to have formed by the collapse of massive stars.'
+
+2026-07-27 09:51:36  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:51:36  Reply : '1.  \nA deep, deep space,                                                                                                                                           '
+
+2026-07-27 09:51:36  Prompt: "What's 17 * 24?"
+2026-07-27 09:51:36  Reply : '17 * 24'
+
+2026-07-27 09:51:36  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:51:36  Reply : 'Three tips for staying focused while studying are: 1) prioritize your tasks by making them to the most important, 2) set specific goals for each study session, and 3) create a clear schedule for your work.'
+
+2026-07-27 09:51:39  ──────────────────────────────  EVAL step 600  val_loss=1.4708  train_loss=1.2508  ──────────────────────────────
+2026-07-27 09:51:39  EVAL step=600 val_loss=1.470837
+2026-07-27 09:51:39      val_response_token_accuracy: 65.28%
+2026-07-27 09:51:55    ✓ Checkpoint saved → checkpoints_sft_v2/step_0000600.pt  (step 600)
+2026-07-27 09:51:55  CHECKPOINT step=600 path=checkpoints_sft_v2/step_0000600.pt
+2026-07-27 09:52:02  step     610 | loss  1.4161 | lr 2.54e-04 |   428.0k tok/s | gnorm  0.76 | 0.078B toks | step_took 612.4ms | total_time    446s
+2026-07-27 09:52:02      (epoch 1/2  resp_tok_acc= 63.7%  avg_pad_frac= 3.4%)
+2026-07-27 09:52:08  step     620 | loss  1.1814 | lr 2.52e-04 |   732.2k tok/s | gnorm  0.87 | 0.079B toks | step_took 358.0ms | total_time    452s
+2026-07-27 09:52:08      (epoch 1/2  resp_tok_acc= 71.5%  avg_pad_frac= 3.3%)
+2026-07-27 09:52:14  step     630 | loss  1.2308 | lr 2.51e-04 |   573.0k tok/s | gnorm  0.77 | 0.081B toks | step_took 457.5ms | total_time    459s
+2026-07-27 09:52:14      (epoch 1/2  resp_tok_acc= 68.4%  avg_pad_frac= 3.3%)
+2026-07-27 09:52:21  step     640 | loss  1.3828 | lr 2.49e-04 |   371.9k tok/s | gnorm  0.63 | 0.082B toks | step_took 704.9ms | total_time    465s
+2026-07-27 09:52:21      (epoch 1/2  resp_tok_acc= 64.1%  avg_pad_frac= 2.2%)
+2026-07-27 09:52:28  step     650 | loss  1.4544 | lr 2.48e-04 |   285.7k tok/s | gnorm  0.57 | 0.083B toks | step_took 917.5ms | total_time    472s
+2026-07-27 09:52:28      (epoch 1/2  resp_tok_acc= 62.8%  avg_pad_frac= 1.3%)
+2026-07-27 09:52:34  step     660 | loss  1.2041 | lr 2.46e-04 |   495.6k tok/s | gnorm  0.71 | 0.084B toks | step_took 528.9ms | total_time    478s
+2026-07-27 09:52:34      (epoch 1/2  resp_tok_acc= 68.2%  avg_pad_frac= 2.4%)
+2026-07-27 09:52:40  step     670 | loss  1.4371 | lr 2.44e-04 |   335.9k tok/s | gnorm  0.66 | 0.086B toks | step_took 780.5ms | total_time    484s
+2026-07-27 09:52:40      (epoch 1/2  resp_tok_acc= 64.1%  avg_pad_frac= 2.0%)
+2026-07-27 09:52:46  step     680 | loss  1.4091 | lr 2.43e-04 |   556.5k tok/s | gnorm  0.83 | 0.087B toks | step_took 471.1ms | total_time    490s
+2026-07-27 09:52:46      (epoch 1/2  resp_tok_acc= 64.8%  avg_pad_frac= 4.0%)
+2026-07-27 09:52:51  step     690 | loss  1.2651 | lr 2.41e-04 |   414.3k tok/s | gnorm  0.63 | 0.088B toks | step_took 632.7ms | total_time    496s
+2026-07-27 09:52:51      (epoch 1/2  resp_tok_acc= 67.3%  avg_pad_frac= 1.8%)
+2026-07-27 09:52:58  step     700 | loss  1.3451 | lr 2.39e-04 |   331.4k tok/s | gnorm  0.61 | 0.089B toks | step_took 791.0ms | total_time    502s
+2026-07-27 09:52:58      (epoch 1/2  resp_tok_acc= 65.6%  avg_pad_frac= 1.8%)
+2026-07-27 09:53:04  step     710 | loss  1.4710 | lr 2.37e-04 |   346.7k tok/s | gnorm  0.94 | 0.090B toks | step_took 756.0ms | total_time    508s
+2026-07-27 09:53:04      (epoch 1/2  resp_tok_acc= 63.8%  avg_pad_frac= 5.6%)
+2026-07-27 09:53:10  step     720 | loss  1.4323 | lr 2.36e-04 |   351.4k tok/s | gnorm  0.72 | 0.092B toks | step_took 746.1ms | total_time    515s
+2026-07-27 09:53:10      (epoch 1/2  resp_tok_acc= 63.1%  avg_pad_frac= 2.1%)
+2026-07-27 09:53:17  step     730 | loss  1.4006 | lr 2.34e-04 |   320.0k tok/s | gnorm  0.66 | 0.093B toks | step_took 819.2ms | total_time    521s
+2026-07-27 09:53:17      (epoch 1/2  resp_tok_acc= 64.1%  avg_pad_frac= 3.0%)
+2026-07-27 09:53:23  step     740 | loss  1.3993 | lr 2.32e-04 |   365.2k tok/s | gnorm  0.71 | 0.094B toks | step_took 717.8ms | total_time    528s
+2026-07-27 09:53:23      (epoch 1/2  resp_tok_acc= 63.9%  avg_pad_frac= 2.6%)
+2026-07-27 09:53:29  step     750 | loss  1.2168 | lr 2.30e-04 |   671.7k tok/s | gnorm  0.89 | 0.096B toks | step_took 390.3ms | total_time    534s
+2026-07-27 09:53:29      (epoch 1/2  resp_tok_acc= 67.3%  avg_pad_frac= 4.4%)
+2026-07-27 09:53:36  step     760 | loss  1.2586 | lr 2.28e-04 |   384.2k tok/s | gnorm  0.56 | 0.097B toks | step_took 682.3ms | total_time    541s
+2026-07-27 09:53:36      (epoch 1/2  resp_tok_acc= 67.1%  avg_pad_frac= 1.8%)
+2026-07-27 09:53:43  step     770 | loss  1.3576 | lr 2.26e-04 |   415.1k tok/s | gnorm  0.67 | 0.098B toks | step_took 631.6ms | total_time    547s
+2026-07-27 09:53:43      (epoch 1/2  resp_tok_acc= 67.4%  avg_pad_frac= 2.4%)
+2026-07-27 09:53:49  step     780 | loss  1.4562 | lr 2.24e-04 |   320.6k tok/s | gnorm  0.61 | 0.100B toks | step_took 817.6ms | total_time    554s
+2026-07-27 09:53:49      (epoch 1/2  resp_tok_acc= 62.8%  avg_pad_frac= 1.6%)
+2026-07-27 09:53:56  step     790 | loss  1.2357 | lr 2.23e-04 |   400.3k tok/s | gnorm  0.66 | 0.101B toks | step_took 654.8ms | total_time    560s
+2026-07-27 09:53:56      (epoch 1/2  resp_tok_acc= 66.6%  avg_pad_frac= 2.4%)
+2026-07-27 09:54:02  step     800 | loss  1.2563 | lr 2.21e-04 |   432.6k tok/s | gnorm  0.63 | 0.102B toks | step_took 606.0ms | total_time    566s
+2026-07-27 09:54:02      (epoch 1/2  resp_tok_acc= 67.9%  avg_pad_frac= 2.1%)
+2026-07-27 09:54:02  
+────────────────────────────── SAMPLING step 800 ──────────────────────────────
+2026-07-27 09:54:02  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:54:02  Reply : 'A black hole is a mysterious, high-energy particle that is extreme enough to break free from its gravitational pull, causing it to exist. It is often referred to as a "space-filling body" because it is trapped by a black hole and cannot escape the gravitational pull.'
+
+2026-07-27 09:54:02  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:54:02  Reply : 'The gentle waves of the ocean caress the shore, their rhythmic cadence echoing through the cavernous cavern.'
+
+2026-07-27 09:54:02  Prompt: "What's 17 * 24?"
+2026-07-27 09:54:02  Reply : '17 * 24.'
+
+2026-07-27 09:54:03  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:54:03  Reply : '1. Create a dedicated study space free from distractions.\n2. Take regular breaks to refresh your mind.\n3. Set specific goals for each study session.\n4. Stay connected to your academic journal by regularly checking your study notes.\n5. Establish a routine and stick to it.'
+
+2026-07-27 09:54:05  ──────────────────────────────  EVAL step 800  val_loss=1.4268  train_loss=1.2563  ──────────────────────────────
+2026-07-27 09:54:05  EVAL step=800 val_loss=1.426827
+2026-07-27 09:54:05      val_response_token_accuracy: 66.05%
+2026-07-27 09:54:18    ✓ Checkpoint saved → checkpoints_sft_v2/step_0000800.pt  (step 800)
+2026-07-27 09:54:18  CHECKPOINT step=800 path=checkpoints_sft_v2/step_0000800.pt
+2026-07-27 09:54:24  step     810 | loss  1.2450 | lr 2.19e-04 |   460.5k tok/s | gnorm  0.66 | 0.103B toks | step_took 569.3ms | total_time    589s
+2026-07-27 09:54:24      (epoch 1/2  resp_tok_acc= 68.3%  avg_pad_frac= 2.3%)
+2026-07-27 09:54:30  step     820 | loss  1.2621 | lr 2.17e-04 |   471.4k tok/s | gnorm  0.69 | 0.104B toks | step_took 556.0ms | total_time    595s
+2026-07-27 09:54:30      (epoch 1/2  resp_tok_acc= 66.6%  avg_pad_frac= 2.2%)
+2026-07-27 09:54:36  step     830 | loss  1.3052 | lr 2.15e-04 |   546.0k tok/s | gnorm  0.87 | 0.106B toks | step_took 480.1ms | total_time    601s
+2026-07-27 09:54:36      (epoch 1/2  resp_tok_acc= 64.5%  avg_pad_frac= 4.0%)
+2026-07-27 09:54:43  step     840 | loss  1.3694 | lr 2.13e-04 |   499.3k tok/s | gnorm  0.99 | 0.107B toks | step_took 525.1ms | total_time    608s
+2026-07-27 09:54:43      (epoch 1/2  resp_tok_acc= 65.5%  avg_pad_frac= 5.7%)
+2026-07-27 09:54:50  step     850 | loss  1.3269 | lr 2.11e-04 |   525.1k tok/s | gnorm  0.94 | 0.108B toks | step_took 499.2ms | total_time    614s
+2026-07-27 09:54:50      (epoch 1/2  resp_tok_acc= 68.0%  avg_pad_frac= 5.4%)
+2026-07-27 09:54:56  step     860 | loss  1.2604 | lr 2.09e-04 |   402.9k tok/s | gnorm  0.61 | 0.110B toks | step_took 650.7ms | total_time    620s
+2026-07-27 09:54:56      (epoch 1/2  resp_tok_acc= 66.5%  avg_pad_frac= 1.8%)
+2026-07-27 09:55:02  step     870 | loss  1.2252 | lr 2.07e-04 |   488.6k tok/s | gnorm  0.66 | 0.111B toks | step_took 536.5ms | total_time    627s
+2026-07-27 09:55:02      (epoch 1/2  resp_tok_acc= 65.5%  avg_pad_frac= 2.5%)
+2026-07-27 09:55:09  step     880 | loss  1.3214 | lr 2.05e-04 |   459.9k tok/s | gnorm  0.91 | 0.112B toks | step_took 570.0ms | total_time    633s
+2026-07-27 09:55:09      (epoch 1/2  resp_tok_acc= 66.5%  avg_pad_frac= 4.7%)
+2026-07-27 09:55:15  step     890 | loss  1.3953 | lr 2.03e-04 |   414.0k tok/s | gnorm  0.76 | 0.113B toks | step_took 633.2ms | total_time    640s
+2026-07-27 09:55:15      (epoch 1/2  resp_tok_acc= 64.6%  avg_pad_frac= 2.9%)
+2026-07-27 09:55:22  step     900 | loss  1.5548 | lr 2.01e-04 |   256.2k tok/s | gnorm  0.58 | 0.115B toks | step_took 1023.4ms | total_time    646s
+2026-07-27 09:55:22      (epoch 1/2  resp_tok_acc= 62.3%  avg_pad_frac= 1.3%)
+2026-07-27 09:55:29  step     910 | loss  1.4284 | lr 1.99e-04 |   411.5k tok/s | gnorm  0.68 | 0.116B toks | step_took 637.1ms | total_time    653s
+2026-07-27 09:55:29      (epoch 1/2  resp_tok_acc= 64.6%  avg_pad_frac= 2.7%)
+2026-07-27 09:55:35  step     920 | loss  1.2138 | lr 1.97e-04 |   466.8k tok/s | gnorm  0.63 | 0.117B toks | step_took 561.6ms | total_time    659s
+2026-07-27 09:55:35      (epoch 1/2  resp_tok_acc= 68.4%  avg_pad_frac= 2.0%)
+2026-07-27 09:55:42  step     930 | loss  1.2031 | lr 1.95e-04 |   449.9k tok/s | gnorm  0.65 | 0.119B toks | step_took 582.7ms | total_time    666s
+2026-07-27 09:55:42      (epoch 1/2  resp_tok_acc= 68.3%  avg_pad_frac= 2.6%)
+2026-07-27 09:55:48  step     940 | loss  1.2302 | lr 1.93e-04 |   450.8k tok/s | gnorm  0.65 | 0.120B toks | step_took 581.5ms | total_time    672s
+2026-07-27 09:55:48      (epoch 1/2  resp_tok_acc= 66.1%  avg_pad_frac= 2.6%)
+2026-07-27 09:55:54  step     950 | loss  1.3048 | lr 1.91e-04 |   705.2k tok/s | gnorm  1.15 | 0.121B toks | step_took 371.7ms | total_time    679s
+2026-07-27 09:55:54      (epoch 1/2  resp_tok_acc= 71.9%  avg_pad_frac= 8.3%)
+2026-07-27 09:56:01  step     960 | loss  1.2454 | lr 1.89e-04 |   446.2k tok/s | gnorm  0.69 | 0.122B toks | step_took 587.5ms | total_time    685s
+2026-07-27 09:56:01      (epoch 1/2  resp_tok_acc= 66.6%  avg_pad_frac= 2.6%)
+2026-07-27 09:56:07  step     970 | loss  1.2593 | lr 1.87e-04 |   413.7k tok/s | gnorm  0.63 | 0.124B toks | step_took 633.6ms | total_time    691s
+2026-07-27 09:56:07      (epoch 1/2  resp_tok_acc= 64.7%  avg_pad_frac= 2.0%)
+2026-07-27 09:56:14  step     980 | loss  1.3630 | lr 1.85e-04 |   292.9k tok/s | gnorm  0.54 | 0.125B toks | step_took 894.9ms | total_time    698s
+2026-07-27 09:56:14      (epoch 1/2  resp_tok_acc= 65.8%  avg_pad_frac= 1.7%)
+2026-07-27 09:56:21  step     990 | loss  1.1980 | lr 1.83e-04 |   475.5k tok/s | gnorm  0.74 | 0.126B toks | step_took 551.3ms | total_time    705s
+2026-07-27 09:56:21      (epoch 1/2  resp_tok_acc= 68.3%  avg_pad_frac= 3.5%)
+2026-07-27 09:56:27  step   1,000 | loss  1.1946 | lr 1.80e-04 |   461.0k tok/s | gnorm  0.65 | 0.127B toks | step_took 568.6ms | total_time    711s
+2026-07-27 09:56:27      (epoch 1/2  resp_tok_acc= 66.0%  avg_pad_frac= 2.1%)
+2026-07-27 09:56:27  
+────────────────────────────── SAMPLING step 1,000 ──────────────────────────────
+2026-07-27 09:56:27  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:56:27  Reply : 'In two sentences, a black hole is a region in space where the gravitational pull of the sun is so strong that nothing, including light, can escape from its interior at the same time, known as the singularity. This singularity is often referred to as the boundary of the black hole.'
+
+2026-07-27 09:56:27  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:56:27  Reply : 'One by one, as the sun dips below the horizon. The waves gently lap against the shore, while the ocean waves lapping against the shore. She is a beauty, a serene spot, a place where the calmness of the ocean is whispered.'
+
+2026-07-27 09:56:27  Prompt: "What's 17 * 24?"
+2026-07-27 09:56:27  Reply : '17 * 24 = 529\n\nSo, 17 * 24 is 529.'
+
+2026-07-27 09:56:28  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:56:28  Reply : '1. Set clear goals: Break your study sessions into manageable chunks and use study tools like timers or apps to create a structured schedule.\n\n2. Create a dedicated study space: Set up a dedicated space in your study area where you can separate your work from your study space and free up mental energy for focused concentration.\n\n3. Break study sessions into shorter intervals: Break study sessions into shorter intervals, making your study sessions easier to maintain and process. This will help you stay focused and focused throughout your study period.'
+
+2026-07-27 09:56:30  ──────────────────────────────  EVAL step 1,000  val_loss=1.3935  train_loss=1.1946  ──────────────────────────────
+2026-07-27 09:56:30  EVAL step=1000 val_loss=1.393528
+2026-07-27 09:56:30      val_response_token_accuracy: 66.70%
+2026-07-27 09:56:45    ✓ Checkpoint saved → checkpoints_sft_v2/step_0001000.pt  (step 1,000)
+2026-07-27 09:56:45  CHECKPOINT step=1000 path=checkpoints_sft_v2/step_0001000.pt
+2026-07-27 09:56:51  step   1,010 | loss  1.1482 | lr 1.78e-04 |   493.9k tok/s | gnorm  0.73 | 0.129B toks | step_took 530.7ms | total_time    735s
+2026-07-27 09:56:51      (epoch 1/2  resp_tok_acc= 68.5%  avg_pad_frac= 2.8%)
+2026-07-27 09:56:57  step   1,020 | loss  1.3997 | lr 1.76e-04 |   364.3k tok/s | gnorm  0.85 | 0.130B toks | step_took 719.7ms | total_time    741s
+2026-07-27 09:56:57      (epoch 1/2  resp_tok_acc= 64.9%  avg_pad_frac= 5.4%)
+2026-07-27 09:57:04  step   1,030 | loss  1.2564 | lr 1.74e-04 |   412.8k tok/s | gnorm  0.59 | 0.131B toks | step_took 635.0ms | total_time    748s
+2026-07-27 09:57:04      (epoch 1/2  resp_tok_acc= 68.3%  avg_pad_frac= 2.3%)
+2026-07-27 09:57:10  step   1,040 | loss  1.2670 | lr 1.72e-04 |   359.8k tok/s | gnorm  0.56 | 0.132B toks | step_took 728.5ms | total_time    754s
+2026-07-27 09:57:10      (epoch 1/2  resp_tok_acc= 66.1%  avg_pad_frac= 1.9%)
+2026-07-27 09:57:17  step   1,050 | loss  1.2723 | lr 1.70e-04 |   313.7k tok/s | gnorm  0.55 | 0.134B toks | step_took 835.6ms | total_time    761s
+2026-07-27 09:57:17      (epoch 2/2  resp_tok_acc= 66.0%  avg_pad_frac= 1.7%)
+2026-07-27 09:57:23  step   1,060 | loss  1.0486 | lr 1.68e-04 |   473.7k tok/s | gnorm  0.60 | 0.135B toks | step_took 553.4ms | total_time    767s
+2026-07-27 09:57:23      (epoch 2/2  resp_tok_acc= 69.9%  avg_pad_frac= 2.4%)
+2026-07-27 09:57:30  step   1,070 | loss  1.1393 | lr 1.66e-04 |   445.0k tok/s | gnorm  0.60 | 0.136B toks | step_took 589.1ms | total_time    774s
+2026-07-27 09:57:30      (epoch 2/2  resp_tok_acc= 67.8%  avg_pad_frac= 2.6%)
+2026-07-27 09:57:37  step   1,080 | loss  1.2320 | lr 1.64e-04 |   329.6k tok/s | gnorm  0.54 | 0.138B toks | step_took 795.4ms | total_time    781s
+2026-07-27 09:57:37      (epoch 2/2  resp_tok_acc= 66.8%  avg_pad_frac= 3.3%)
+2026-07-27 09:57:43  step   1,090 | loss  0.9502 | lr 1.62e-04 |   434.8k tok/s | gnorm  0.51 | 0.139B toks | step_took 602.9ms | total_time    787s
+2026-07-27 09:57:43      (epoch 2/2  resp_tok_acc= 73.1%  avg_pad_frac= 2.3%)
+2026-07-27 09:57:50  step   1,100 | loss  1.1371 | lr 1.60e-04 |   360.7k tok/s | gnorm  0.57 | 0.140B toks | step_took 726.7ms | total_time    794s
+2026-07-27 09:57:50      (epoch 2/2  resp_tok_acc= 68.3%  avg_pad_frac= 2.5%)
+2026-07-27 09:57:57  step   1,110 | loss  1.0934 | lr 1.57e-04 |   439.6k tok/s | gnorm  0.72 | 0.142B toks | step_took 596.3ms | total_time    801s
+2026-07-27 09:57:57      (epoch 2/2  resp_tok_acc= 69.3%  avg_pad_frac= 4.0%)
+2026-07-27 09:58:04  step   1,120 | loss  1.1021 | lr 1.55e-04 |   401.1k tok/s | gnorm  0.56 | 0.143B toks | step_took 653.6ms | total_time    808s
+2026-07-27 09:58:04      (epoch 2/2  resp_tok_acc= 69.6%  avg_pad_frac= 2.2%)
+2026-07-27 09:58:10  step   1,130 | loss  1.0438 | lr 1.53e-04 |   434.1k tok/s | gnorm  0.61 | 0.144B toks | step_took 603.9ms | total_time    815s
+2026-07-27 09:58:10      (epoch 2/2  resp_tok_acc= 69.2%  avg_pad_frac= 2.6%)
+2026-07-27 09:58:17  step   1,140 | loss  1.1518 | lr 1.51e-04 |   354.5k tok/s | gnorm  0.58 | 0.146B toks | step_took 739.5ms | total_time    821s
+2026-07-27 09:58:17      (epoch 2/2  resp_tok_acc= 66.6%  avg_pad_frac= 1.9%)
+2026-07-27 09:58:23  step   1,150 | loss  1.1165 | lr 1.49e-04 |   424.4k tok/s | gnorm  0.58 | 0.147B toks | step_took 617.7ms | total_time    827s
+2026-07-27 09:58:23      (epoch 2/2  resp_tok_acc= 68.1%  avg_pad_frac= 2.2%)
+2026-07-27 09:58:29  step   1,160 | loss  1.1285 | lr 1.47e-04 |   356.0k tok/s | gnorm  0.50 | 0.148B toks | step_took 736.3ms | total_time    833s
+2026-07-27 09:58:29      (epoch 2/2  resp_tok_acc= 68.5%  avg_pad_frac= 2.1%)
+2026-07-27 09:58:36  step   1,170 | loss  1.1083 | lr 1.45e-04 |   409.5k tok/s | gnorm  0.62 | 0.149B toks | step_took 640.2ms | total_time    840s
+2026-07-27 09:58:36      (epoch 2/2  resp_tok_acc= 68.4%  avg_pad_frac= 2.5%)
+2026-07-27 09:58:42  step   1,180 | loss  1.0098 | lr 1.43e-04 |   468.8k tok/s | gnorm  0.64 | 0.151B toks | step_took 559.1ms | total_time    847s
+2026-07-27 09:58:42      (epoch 2/2  resp_tok_acc= 70.0%  avg_pad_frac= 3.3%)
+2026-07-27 09:58:48  step   1,190 | loss  1.0599 | lr 1.41e-04 |   441.3k tok/s | gnorm  0.67 | 0.152B toks | step_took 594.0ms | total_time    853s
+2026-07-27 09:58:48      (epoch 2/2  resp_tok_acc= 68.8%  avg_pad_frac= 3.6%)
+2026-07-27 09:58:54  step   1,200 | loss  1.0912 | lr 1.39e-04 |   405.0k tok/s | gnorm  0.55 | 0.153B toks | step_took 647.3ms | total_time    858s
+2026-07-27 09:58:54      (epoch 2/2  resp_tok_acc= 68.1%  avg_pad_frac= 2.3%)
+2026-07-27 09:58:54  
+────────────────────────────── SAMPLING step 1,200 ──────────────────────────────
+2026-07-27 09:58:55  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 09:58:55  Reply : 'In two sentences, a black hole is a region in space where the gravitational pull is so strong that nothing, not even light, can escape it. It is a point of extreme gravity that cannot be caused by any other matter or radiation. Black holes are often thought of as objects that have been trapped in a black hole for millions of years, but they are much smaller and smaller than planets and stars. They are called black holes because their gravity is so strong that it warps space at the very center of the black hole.'
+
+2026-07-27 09:58:55  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 09:58:55  Reply : "A sea of pinks and gold,\nA tide of serenity,\nLush, cool waters,\nSoft sand, and soft waves.\n\nEach wave, gently caresses\nNurturing every breath,\nA dance of colors,\nA symphony of sound.\n\nA warm, welcoming light,\nSilence, a lullaby.\n\nThe ocean's calm, comforting,\nA realm of serenity,\nA natural, ever-changing force.\n\nA canvas of endless blue,\nA canvas of serenity,\nA reflection of the beauty of the sea.\n\nA lullaby, a lullaby,\nA lullaby, a reminder.\n\nA sea of"
+
+2026-07-27 09:58:55  Prompt: "What's 17 * 24?"
+2026-07-27 09:58:55  Reply : '17 * 24 = 1748.'
+
+2026-07-27 09:58:56  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 09:58:56  Reply : '1. Create a designated study space free from distractions.\n2. Set specific goals for each study session.\n3. Take regular breaks to refresh your mind.'
+
+2026-07-27 09:58:58  ──────────────────────────────  EVAL step 1,200  val_loss=1.3726  train_loss=1.0912  ──────────────────────────────
+2026-07-27 09:58:58  EVAL step=1200 val_loss=1.372642
+2026-07-27 09:58:58      val_response_token_accuracy: 67.12%
+2026-07-27 09:59:12    ✓ Checkpoint saved → checkpoints_sft_v2/step_0001200.pt  (step 1,200)
+2026-07-27 09:59:12  CHECKPOINT step=1200 path=checkpoints_sft_v2/step_0001200.pt
+2026-07-27 09:59:18  step   1,210 | loss  0.9291 | lr 1.37e-04 |   542.0k tok/s | gnorm  0.60 | 0.154B toks | step_took 483.6ms | total_time    883s
+2026-07-27 09:59:18      (epoch 2/2  resp_tok_acc= 72.8%  avg_pad_frac= 2.2%)
+2026-07-27 09:59:24  step   1,220 | loss  1.0600 | lr 1.35e-04 |   507.8k tok/s | gnorm  0.64 | 0.155B toks | step_took 516.3ms | total_time    889s
+2026-07-27 09:59:24      (epoch 2/2  resp_tok_acc= 69.8%  avg_pad_frac= 3.7%)
+2026-07-27 09:59:31  step   1,230 | loss  1.2461 | lr 1.33e-04 |   333.4k tok/s | gnorm  0.53 | 0.157B toks | step_took 786.2ms | total_time    896s
+2026-07-27 09:59:31      (epoch 2/2  resp_tok_acc= 65.4%  avg_pad_frac= 2.2%)
+2026-07-27 09:59:38  step   1,240 | loss  1.0744 | lr 1.31e-04 |   405.1k tok/s | gnorm  0.66 | 0.158B toks | step_took 647.0ms | total_time    902s
+2026-07-27 09:59:38      (epoch 2/2  resp_tok_acc= 68.3%  avg_pad_frac= 4.6%)
+2026-07-27 09:59:44  step   1,250 | loss  1.0573 | lr 1.29e-04 |   401.9k tok/s | gnorm  0.66 | 0.159B toks | step_took 652.3ms | total_time    908s
+2026-07-27 09:59:44      (epoch 2/2  resp_tok_acc= 70.3%  avg_pad_frac= 4.7%)
+2026-07-27 09:59:50  step   1,260 | loss  0.9963 | lr 1.27e-04 |   531.1k tok/s | gnorm  0.61 | 0.160B toks | step_took 493.6ms | total_time    914s
+2026-07-27 09:59:50      (epoch 2/2  resp_tok_acc= 70.0%  avg_pad_frac= 2.2%)
+2026-07-27 09:59:57  step   1,270 | loss  1.1655 | lr 1.25e-04 |   363.1k tok/s | gnorm  0.59 | 0.162B toks | step_took 721.9ms | total_time    921s
+2026-07-27 09:59:57      (epoch 2/2  resp_tok_acc= 67.8%  avg_pad_frac= 2.2%)
+2026-07-27 10:00:03  step   1,280 | loss  0.9810 | lr 1.23e-04 |   526.5k tok/s | gnorm  0.61 | 0.163B toks | step_took 497.9ms | total_time    927s
+2026-07-27 10:00:03      (epoch 2/2  resp_tok_acc= 70.4%  avg_pad_frac= 2.4%)
+2026-07-27 10:00:09  step   1,290 | loss  1.1709 | lr 1.21e-04 |   344.5k tok/s | gnorm  0.49 | 0.164B toks | step_took 760.9ms | total_time    934s
+2026-07-27 10:00:09      (epoch 2/2  resp_tok_acc= 68.5%  avg_pad_frac= 2.0%)
+2026-07-27 10:00:16  step   1,300 | loss  1.1382 | lr 1.19e-04 |   378.0k tok/s | gnorm  0.58 | 0.166B toks | step_took 693.5ms | total_time    940s
+2026-07-27 10:00:16      (epoch 2/2  resp_tok_acc= 68.2%  avg_pad_frac= 2.4%)
+2026-07-27 10:00:22  step   1,310 | loss  1.1835 | lr 1.17e-04 |   364.0k tok/s | gnorm  0.54 | 0.167B toks | step_took 720.2ms | total_time    946s
+2026-07-27 10:00:22      (epoch 2/2  resp_tok_acc= 68.2%  avg_pad_frac= 2.4%)
+2026-07-27 10:00:29  step   1,320 | loss  1.1482 | lr 1.15e-04 |   341.5k tok/s | gnorm  0.48 | 0.168B toks | step_took 767.6ms | total_time    953s
+2026-07-27 10:00:29      (epoch 2/2  resp_tok_acc= 69.5%  avg_pad_frac= 2.0%)
+2026-07-27 10:00:36  step   1,330 | loss  1.1467 | lr 1.13e-04 |   385.4k tok/s | gnorm  0.70 | 0.170B toks | step_took 680.2ms | total_time    960s
+2026-07-27 10:00:36      (epoch 2/2  resp_tok_acc= 67.3%  avg_pad_frac= 5.2%)
+2026-07-27 10:00:43  step   1,340 | loss  1.0408 | lr 1.11e-04 |   472.9k tok/s | gnorm  0.58 | 0.171B toks | step_took 554.3ms | total_time    967s
+2026-07-27 10:00:43      (epoch 2/2  resp_tok_acc= 71.5%  avg_pad_frac= 2.5%)
+2026-07-27 10:00:48  step   1,350 | loss  0.9682 | lr 1.09e-04 |   478.2k tok/s | gnorm  0.64 | 0.172B toks | step_took 548.2ms | total_time    973s
+2026-07-27 10:00:48      (epoch 2/2  resp_tok_acc= 70.3%  avg_pad_frac= 2.9%)
+2026-07-27 10:00:54  step   1,360 | loss  1.0728 | lr 1.07e-04 |   424.6k tok/s | gnorm  0.63 | 0.173B toks | step_took 617.5ms | total_time    979s
+2026-07-27 10:00:54      (epoch 2/2  resp_tok_acc= 68.8%  avg_pad_frac= 3.1%)
+2026-07-27 10:01:00  step   1,370 | loss  1.0303 | lr 1.05e-04 |   455.8k tok/s | gnorm  0.73 | 0.175B toks | step_took 575.2ms | total_time    985s
+2026-07-27 10:01:00      (epoch 2/2  resp_tok_acc= 72.9%  avg_pad_frac= 4.9%)
+2026-07-27 10:01:06  step   1,380 | loss  1.1905 | lr 1.03e-04 |   316.7k tok/s | gnorm  0.46 | 0.176B toks | step_took 827.8ms | total_time    990s
+2026-07-27 10:01:06      (epoch 2/2  resp_tok_acc= 67.3%  avg_pad_frac= 1.7%)
+2026-07-27 10:01:12  step   1,390 | loss  1.0778 | lr 1.01e-04 |   474.0k tok/s | gnorm  0.78 | 0.177B toks | step_took 553.1ms | total_time    997s
+2026-07-27 10:01:12      (epoch 2/2  resp_tok_acc= 67.8%  avg_pad_frac= 5.3%)
+2026-07-27 10:01:19  step   1,400 | loss  1.0945 | lr 9.96e-05 |   408.1k tok/s | gnorm  0.59 | 0.178B toks | step_took 642.4ms | total_time   1004s
+2026-07-27 10:01:19      (epoch 2/2  resp_tok_acc= 67.8%  avg_pad_frac= 3.3%)
+2026-07-27 10:01:19  
+────────────────────────────── SAMPLING step 1,400 ──────────────────────────────
+2026-07-27 10:01:20  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 10:01:20  Reply : 'In two sentences, the black hole is a region in space where the gravitational pull is so strong that nothing, including light, can escape. In the first sentence, "black holes are located in the order of the masses in the universe, as seen from the Big Bang, where the galaxies collapse into collapse."\n\nIn the second sentence, "black holes are located in the order of the masses in the universe, as seen from the Big Bang, where the galaxies collapse into collapse." The term "black hole" refers to the singularity of the black hole, which is a singularity above the redshift of the galaxy. In the first sentence, it is used to describe a region in space where the gravitational pull is so strong that it'
+
+2026-07-27 10:01:21  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 10:01:21  Reply : "The waves crashed against the shore,\nIn the soft sand,\nIn the sun's warmth.\n\nA gentle breeze rustles the leaves,\nA symphony of colors, in the colors of the ocean's surface.\n\nA calm lake sings the gentle lapping,\nIn a soothing echo of a bygone era.\n\nA sea of blue stretches ahead,\nA serene bridge of the sky.\n\nA serene lake reflects the sky,\nA mirror to the sky's beauty.\n\nA serene beach stretches ahead,\nIn the sun's gentle lapping,\nIn the water's calm touch.\n\nA serene beach is a part of the ocean,\nA moment of peace and"
+
+2026-07-27 10:01:21  Prompt: "What's 17 * 24?"
+2026-07-27 10:01:21  Reply : '17 * 24 is 17 * 24.'
+
+2026-07-27 10:01:21  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 10:01:21  Reply : '1. Create a dedicated study space free from distractions, such as your phone or computer.\n2. Take regular breaks to avoid mental fatigue and keep your mind fresh.\n3. Stay hydrated and eat nutritious snacks to maintain your energy levels.'
+
+2026-07-27 10:01:23  ──────────────────────────────  EVAL step 1,400  val_loss=1.3478  train_loss=1.0945  ──────────────────────────────
+2026-07-27 10:01:23  EVAL step=1400 val_loss=1.347771
+2026-07-27 10:01:23      val_response_token_accuracy: 67.58%
+2026-07-27 10:01:38    ✓ Checkpoint saved → checkpoints_sft_v2/step_0001400.pt  (step 1,400)
+2026-07-27 10:01:38  CHECKPOINT step=1400 path=checkpoints_sft_v2/step_0001400.pt
+2026-07-27 10:01:45  step   1,410 | loss  1.0497 | lr 9.77e-05 |   432.4k tok/s | gnorm  0.54 | 0.180B toks | step_took 606.2ms | total_time   1029s
+2026-07-27 10:01:45      (epoch 2/2  resp_tok_acc= 69.4%  avg_pad_frac= 2.0%)
+2026-07-27 10:01:51  step   1,420 | loss  1.1599 | lr 9.59e-05 |   340.4k tok/s | gnorm  0.67 | 0.181B toks | step_took 770.1ms | total_time   1036s
+2026-07-27 10:01:51      (epoch 2/2  resp_tok_acc= 67.6%  avg_pad_frac= 4.8%)
+2026-07-27 10:01:58  step   1,430 | loss  1.2522 | lr 9.41e-05 |   316.9k tok/s | gnorm  0.52 | 0.182B toks | step_took 827.2ms | total_time   1042s
+2026-07-27 10:01:58      (epoch 2/2  resp_tok_acc= 65.7%  avg_pad_frac= 1.9%)
+2026-07-27 10:02:05  step   1,440 | loss  1.1565 | lr 9.24e-05 |   342.2k tok/s | gnorm  0.46 | 0.183B toks | step_took 766.0ms | total_time   1049s
+2026-07-27 10:02:05      (epoch 2/2  resp_tok_acc= 68.0%  avg_pad_frac= 2.0%)
+2026-07-27 10:02:11  step   1,450 | loss  0.9537 | lr 9.06e-05 |   465.7k tok/s | gnorm  0.53 | 0.185B toks | step_took 562.9ms | total_time   1056s
+2026-07-27 10:02:11      (epoch 2/2  resp_tok_acc= 73.4%  avg_pad_frac= 2.4%)
+2026-07-27 10:02:17  step   1,460 | loss  0.9903 | lr 8.89e-05 |   534.5k tok/s | gnorm  0.63 | 0.186B toks | step_took 490.4ms | total_time   1061s
+2026-07-27 10:02:17      (epoch 2/2  resp_tok_acc= 71.5%  avg_pad_frac= 3.6%)
+2026-07-27 10:02:23  step   1,470 | loss  1.0915 | lr 8.71e-05 |   394.5k tok/s | gnorm  0.59 | 0.187B toks | step_took 664.6ms | total_time   1067s
+2026-07-27 10:02:23      (epoch 2/2  resp_tok_acc= 68.0%  avg_pad_frac= 3.1%)
+2026-07-27 10:02:29  step   1,480 | loss  0.9976 | lr 8.54e-05 |   476.2k tok/s | gnorm  0.68 | 0.188B toks | step_took 550.5ms | total_time   1073s
+2026-07-27 10:02:29      (epoch 2/2  resp_tok_acc= 66.8%  avg_pad_frac= 3.1%)
+2026-07-27 10:02:36  step   1,490 | loss  1.1140 | lr 8.38e-05 |   434.2k tok/s | gnorm  0.68 | 0.190B toks | step_took 603.8ms | total_time   1080s
+2026-07-27 10:02:36      (epoch 2/2  resp_tok_acc= 66.6%  avg_pad_frac= 3.3%)
+2026-07-27 10:02:43  step   1,500 | loss  1.0857 | lr 8.21e-05 |   438.3k tok/s | gnorm  0.60 | 0.191B toks | step_took 598.0ms | total_time   1087s
+2026-07-27 10:02:43      (epoch 2/2  resp_tok_acc= 69.5%  avg_pad_frac= 2.2%)
+2026-07-27 10:02:50  step   1,510 | loss  1.1095 | lr 8.05e-05 |   366.5k tok/s | gnorm  0.52 | 0.192B toks | step_took 715.2ms | total_time   1094s
+2026-07-27 10:02:50      (epoch 2/2  resp_tok_acc= 66.7%  avg_pad_frac= 2.2%)
+2026-07-27 10:02:56  step   1,520 | loss  1.1577 | lr 7.88e-05 |   314.9k tok/s | gnorm  0.43 | 0.194B toks | step_took 832.3ms | total_time   1101s
+2026-07-27 10:02:56      (epoch 2/2  resp_tok_acc= 67.9%  avg_pad_frac= 1.7%)
+2026-07-27 10:03:03  step   1,530 | loss  1.0160 | lr 7.72e-05 |   480.0k tok/s | gnorm  0.62 | 0.195B toks | step_took 546.2ms | total_time   1107s
+2026-07-27 10:03:03      (epoch 2/2  resp_tok_acc= 69.3%  avg_pad_frac= 2.5%)
+2026-07-27 10:03:09  step   1,540 | loss  1.0145 | lr 7.56e-05 |   423.6k tok/s | gnorm  0.54 | 0.196B toks | step_took 618.9ms | total_time   1113s
+2026-07-27 10:03:09      (epoch 2/2  resp_tok_acc= 70.1%  avg_pad_frac= 2.0%)
+2026-07-27 10:03:15  step   1,550 | loss  1.0064 | lr 7.41e-05 |   435.4k tok/s | gnorm  0.56 | 0.197B toks | step_took 602.0ms | total_time   1119s
+2026-07-27 10:03:15      (epoch 2/2  resp_tok_acc= 70.4%  avg_pad_frac= 2.8%)
+2026-07-27 10:03:21  step   1,560 | loss  1.0692 | lr 7.25e-05 |   432.0k tok/s | gnorm  0.65 | 0.199B toks | step_took 606.8ms | total_time   1125s
+2026-07-27 10:03:21      (epoch 2/2  resp_tok_acc= 70.7%  avg_pad_frac= 5.5%)
+2026-07-27 10:03:27  step   1,570 | loss  1.0327 | lr 7.10e-05 |   429.5k tok/s | gnorm  0.51 | 0.200B toks | step_took 610.4ms | total_time   1131s
+2026-07-27 10:03:27      (epoch 2/2  resp_tok_acc= 70.8%  avg_pad_frac= 2.2%)
+2026-07-27 10:03:34  step   1,580 | loss  1.2065 | lr 6.95e-05 |   323.5k tok/s | gnorm  0.50 | 0.201B toks | step_took 810.3ms | total_time   1138s
+2026-07-27 10:03:34      (epoch 2/2  resp_tok_acc= 65.5%  avg_pad_frac= 1.5%)
+2026-07-27 10:03:40  step   1,590 | loss  0.8661 | lr 6.81e-05 |   803.9k tok/s | gnorm  0.75 | 0.202B toks | step_took 326.1ms | total_time   1144s
+2026-07-27 10:03:40      (epoch 2/2  resp_tok_acc= 76.6%  avg_pad_frac= 3.3%)
+2026-07-27 10:03:47  step   1,600 | loss  1.1136 | lr 6.66e-05 |   392.9k tok/s | gnorm  0.72 | 0.204B toks | step_took 667.1ms | total_time   1151s
+2026-07-27 10:03:47      (epoch 2/2  resp_tok_acc= 67.5%  avg_pad_frac= 5.7%)
+2026-07-27 10:03:47  
+────────────────────────────── SAMPLING step 1,600 ──────────────────────────────
+2026-07-27 10:03:47  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 10:03:47  Reply : "A black hole is an extremely dense point of matter that is so close to a black hole's center. It is formed when a massive star collapses under its own gravity, causing a massive amount of matter to be compressed and compressed into an incredibly small space. Black holes are formed because the gravitational pull of the massive star causes the material to expand around it, creating an area of intense gravitational attraction between the two masses."
+
+2026-07-27 10:03:48  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 10:03:48  Reply : "As the sun dips below the horizon, the waves crash against the shore,\nUnder the blue sky, the ocean's calm waters wash away.\n\nA lullaby to the sea,\nShe's a lullaby, a lullaby to the ocean's calm.\n\nHer calm song,\nShe's a lullaby, a lullaby to the ocean.\n\nA lullaby to the sea,\nShe's a lullaby, a lullaby to the ocean.\n\nShe sings,\nShe's a lullaby, a lullaby to the sea.\n\nShe's a lullaby, a lullaby to the ocean.\n\nShe sings,\nShe's a lullaby, a lullaby to the ocean."
+
+2026-07-27 10:03:48  Prompt: "What's 17 * 24?"
+2026-07-27 10:03:48  Reply : '17 * 24 = 17 * 24 = 3460'
+
+2026-07-27 10:03:48  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 10:03:48  Reply : '1. Create a dedicated study space free from distractions.\n2. Set clear goals for each study session so you have a clear direction.\n3. Take regular breaks to avoid burnout and maintain concentration.'
+
+2026-07-27 10:03:51  ──────────────────────────────  EVAL step 1,600  val_loss=1.3283  train_loss=1.1136  ──────────────────────────────
+2026-07-27 10:03:51  EVAL step=1600 val_loss=1.328343
+2026-07-27 10:03:51      val_response_token_accuracy: 68.01%
+2026-07-27 10:04:05    ✓ Checkpoint saved → checkpoints_sft_v2/step_0001600.pt  (step 1,600)
+2026-07-27 10:04:05  CHECKPOINT step=1600 path=checkpoints_sft_v2/step_0001600.pt
+2026-07-27 10:04:11  step   1,610 | loss  1.0586 | lr 6.52e-05 |   410.5k tok/s | gnorm  0.58 | 0.205B toks | step_took 638.5ms | total_time   1175s
+2026-07-27 10:04:11      (epoch 2/2  resp_tok_acc= 68.5%  avg_pad_frac= 3.1%)
+2026-07-27 10:04:17  step   1,620 | loss  0.9146 | lr 6.38e-05 |   558.3k tok/s | gnorm  0.75 | 0.206B toks | step_took 469.6ms | total_time   1181s
+2026-07-27 10:04:17      (epoch 2/2  resp_tok_acc= 72.8%  avg_pad_frac= 6.2%)
+2026-07-27 10:04:22  step   1,630 | loss  0.9512 | lr 6.24e-05 |   659.5k tok/s | gnorm  0.65 | 0.207B toks | step_took 397.5ms | total_time   1187s
+2026-07-27 10:04:22      (epoch 2/2  resp_tok_acc= 72.8%  avg_pad_frac= 2.3%)
+2026-07-27 10:04:29  step   1,640 | loss  1.0540 | lr 6.11e-05 |   421.9k tok/s | gnorm  0.54 | 0.209B toks | step_took 621.3ms | total_time   1193s
+2026-07-27 10:04:29      (epoch 2/2  resp_tok_acc= 69.0%  avg_pad_frac= 2.4%)
+2026-07-27 10:04:35  step   1,650 | loss  0.9522 | lr 5.98e-05 |   493.3k tok/s | gnorm  0.57 | 0.210B toks | step_took 531.4ms | total_time   1199s
+2026-07-27 10:04:35      (epoch 2/2  resp_tok_acc= 70.5%  avg_pad_frac= 2.5%)
+2026-07-27 10:04:42  step   1,660 | loss  1.0806 | lr 5.85e-05 |   350.5k tok/s | gnorm  0.47 | 0.211B toks | step_took 747.9ms | total_time   1206s
+2026-07-27 10:04:42      (epoch 2/2  resp_tok_acc= 69.1%  avg_pad_frac= 2.2%)
+2026-07-27 10:04:48  step   1,670 | loss  1.0487 | lr 5.72e-05 |   384.5k tok/s | gnorm  0.61 | 0.212B toks | step_took 681.9ms | total_time   1213s
+2026-07-27 10:04:48      (epoch 2/2  resp_tok_acc= 68.2%  avg_pad_frac= 5.2%)
+2026-07-27 10:04:54  step   1,680 | loss  0.9607 | lr 5.59e-05 |   501.8k tok/s | gnorm  0.60 | 0.214B toks | step_took 522.4ms | total_time   1219s
+2026-07-27 10:04:54      (epoch 2/2  resp_tok_acc= 71.3%  avg_pad_frac= 2.5%)
+2026-07-27 10:05:00  step   1,690 | loss  1.1122 | lr 5.47e-05 |   350.3k tok/s | gnorm  0.52 | 0.215B toks | step_took 748.3ms | total_time   1225s
+2026-07-27 10:05:00      (epoch 2/2  resp_tok_acc= 67.3%  avg_pad_frac= 2.0%)
+2026-07-27 10:05:07  step   1,700 | loss  1.0033 | lr 5.35e-05 |   407.7k tok/s | gnorm  0.51 | 0.216B toks | step_took 643.0ms | total_time   1231s
+2026-07-27 10:05:07      (epoch 2/2  resp_tok_acc= 71.1%  avg_pad_frac= 2.4%)
+2026-07-27 10:05:13  step   1,710 | loss  1.0602 | lr 5.23e-05 |   426.7k tok/s | gnorm  0.57 | 0.217B toks | step_took 614.4ms | total_time   1237s
+2026-07-27 10:05:13      (epoch 2/2  resp_tok_acc= 68.9%  avg_pad_frac= 2.2%)
+2026-07-27 10:05:19  step   1,720 | loss  1.0574 | lr 5.12e-05 |   385.5k tok/s | gnorm  0.56 | 0.218B toks | step_took 680.0ms | total_time   1243s
+2026-07-27 10:05:19      (epoch 2/2  resp_tok_acc= 69.0%  avg_pad_frac= 2.2%)
+2026-07-27 10:05:26  step   1,730 | loss  1.1548 | lr 5.01e-05 |   365.0k tok/s | gnorm  0.56 | 0.220B toks | step_took 718.2ms | total_time   1250s
+2026-07-27 10:05:26      (epoch 2/2  resp_tok_acc= 68.2%  avg_pad_frac= 2.1%)
+2026-07-27 10:05:32  step   1,740 | loss  1.1090 | lr 4.90e-05 |   376.1k tok/s | gnorm  0.49 | 0.221B toks | step_took 697.0ms | total_time   1257s
+2026-07-27 10:05:32      (epoch 2/2  resp_tok_acc= 69.3%  avg_pad_frac= 1.6%)
+2026-07-27 10:05:39  step   1,750 | loss  1.1727 | lr 4.79e-05 |   330.9k tok/s | gnorm  0.64 | 0.222B toks | step_took 792.3ms | total_time   1263s
+2026-07-27 10:05:39      (epoch 2/2  resp_tok_acc= 66.7%  avg_pad_frac= 4.1%)
+2026-07-27 10:05:45  step   1,760 | loss  1.2503 | lr 4.69e-05 |   294.0k tok/s | gnorm  0.49 | 0.224B toks | step_took 891.6ms | total_time   1270s
+2026-07-27 10:05:45      (epoch 2/2  resp_tok_acc= 67.6%  avg_pad_frac= 2.1%)
+2026-07-27 10:05:52  step   1,770 | loss  1.0586 | lr 4.59e-05 |   411.5k tok/s | gnorm  0.49 | 0.225B toks | step_took 637.0ms | total_time   1276s
+2026-07-27 10:05:52      (epoch 2/2  resp_tok_acc= 69.4%  avg_pad_frac= 2.2%)
+2026-07-27 10:05:58  step   1,780 | loss  1.0089 | lr 4.49e-05 |   457.9k tok/s | gnorm  0.57 | 0.226B toks | step_took 572.4ms | total_time   1283s
+2026-07-27 10:05:58      (epoch 2/2  resp_tok_acc= 69.7%  avg_pad_frac= 2.5%)
+2026-07-27 10:06:05  step   1,790 | loss  1.2551 | lr 4.40e-05 |   293.5k tok/s | gnorm  0.45 | 0.228B toks | step_took 893.2ms | total_time   1289s
+2026-07-27 10:06:05      (epoch 2/2  resp_tok_acc= 67.5%  avg_pad_frac= 2.3%)
+2026-07-27 10:06:11  step   1,800 | loss  1.0397 | lr 4.31e-05 |   439.2k tok/s | gnorm  0.62 | 0.229B toks | step_took 596.8ms | total_time   1295s
+2026-07-27 10:06:11      (epoch 2/2  resp_tok_acc= 71.0%  avg_pad_frac= 3.7%)
+2026-07-27 10:06:11  
+────────────────────────────── SAMPLING step 1,800 ──────────────────────────────
+2026-07-27 10:06:12  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 10:06:12  Reply : "A black hole is a region in space where the gravitational pull is so strong that nothing, including light, can escape from it. This is because the black hole is not massive, and its gravity is so massive that it would not be able to escape the gravitational pull of light. When a black hole is formed, its gravity becomes so strong that nothing, including light, can escape, and escape from it. This is what we can expect in terms of the black hole's composition, size, and behavior."
+
+2026-07-27 10:06:12  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 10:06:12  Reply : "In the crystal clear blue waters,\nA gentle breeze of green leaves,\nThe ocean's soft, soothing embrace.\n\nWith a warm, golden glow,\nThe ocean's calm surface,\nEasing the soul's troubles,\nA gentle lullaby to the shore."
+
+2026-07-27 10:06:12  Prompt: "What's 17 * 24?"
+2026-07-27 10:06:12  Reply : '17 * 24 = 17 * 24 = 288.'
+
+2026-07-27 10:06:12  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 10:06:12  Reply : '1. Set clear goals for your study session and break your study into manageable chunks. \n\n2. Create a schedule or to-do list for each study session.\n\n3. Take regular breaks to avoid burnout and maintain concentration.'
+
+2026-07-27 10:06:15  ──────────────────────────────  EVAL step 1,800  val_loss=1.3167  train_loss=1.0397  ──────────────────────────────
+2026-07-27 10:06:15  EVAL step=1800 val_loss=1.316665
+2026-07-27 10:06:15      val_response_token_accuracy: 68.18%
+2026-07-27 10:06:28    ✓ Checkpoint saved → checkpoints_sft_v2/step_0001800.pt  (step 1,800)
+2026-07-27 10:06:28  CHECKPOINT step=1800 path=checkpoints_sft_v2/step_0001800.pt
+2026-07-27 10:06:35  step   1,810 | loss  0.8517 | lr 4.22e-05 |   709.3k tok/s | gnorm  0.75 | 0.230B toks | step_took 369.6ms | total_time   1319s
+2026-07-27 10:06:35      (epoch 2/2  resp_tok_acc= 75.0%  avg_pad_frac= 5.8%)
+2026-07-27 10:06:41  step   1,820 | loss  1.0085 | lr 4.13e-05 |   373.4k tok/s | gnorm  0.50 | 0.231B toks | step_took 702.1ms | total_time   1325s
+2026-07-27 10:06:41      (epoch 2/2  resp_tok_acc= 70.4%  avg_pad_frac= 2.5%)
+2026-07-27 10:06:48  step   1,830 | loss  0.7991 | lr 4.05e-05 |   666.2k tok/s | gnorm  0.63 | 0.233B toks | step_took 393.5ms | total_time   1332s
+2026-07-27 10:06:48      (epoch 2/2  resp_tok_acc= 78.2%  avg_pad_frac= 2.8%)
+2026-07-27 10:06:54  step   1,840 | loss  1.1192 | lr 3.97e-05 |   346.5k tok/s | gnorm  0.48 | 0.234B toks | step_took 756.5ms | total_time   1338s
+2026-07-27 10:06:54      (epoch 2/2  resp_tok_acc= 68.8%  avg_pad_frac= 1.8%)
+2026-07-27 10:07:00  step   1,850 | loss  1.0992 | lr 3.90e-05 |   400.3k tok/s | gnorm  0.62 | 0.235B toks | step_took 654.8ms | total_time   1344s
+2026-07-27 10:07:00      (epoch 2/2  resp_tok_acc= 68.3%  avg_pad_frac= 4.3%)
+2026-07-27 10:07:06  step   1,860 | loss  1.0194 | lr 3.82e-05 |   386.2k tok/s | gnorm  0.50 | 0.236B toks | step_took 678.8ms | total_time   1350s
+2026-07-27 10:07:06      (epoch 2/2  resp_tok_acc= 70.6%  avg_pad_frac= 2.0%)
+2026-07-27 10:07:13  step   1,870 | loss  1.2074 | lr 3.75e-05 |   335.2k tok/s | gnorm  0.66 | 0.238B toks | step_took 782.1ms | total_time   1357s
+2026-07-27 10:07:13      (epoch 2/2  resp_tok_acc= 67.2%  avg_pad_frac= 4.6%)
+2026-07-27 10:07:19  step   1,880 | loss  1.2514 | lr 3.68e-05 |   309.3k tok/s | gnorm  0.53 | 0.239B toks | step_took 847.7ms | total_time   1363s
+2026-07-27 10:07:19      (epoch 2/2  resp_tok_acc= 66.1%  avg_pad_frac= 2.2%)
+2026-07-27 10:07:26  step   1,890 | loss  1.0615 | lr 3.62e-05 |   460.5k tok/s | gnorm  0.60 | 0.240B toks | step_took 569.3ms | total_time   1370s
+2026-07-27 10:07:26      (epoch 2/2  resp_tok_acc= 67.4%  avg_pad_frac= 2.8%)
+2026-07-27 10:07:32  step   1,900 | loss  0.9884 | lr 3.56e-05 |   459.5k tok/s | gnorm  0.56 | 0.242B toks | step_took 570.5ms | total_time   1377s
+2026-07-27 10:07:32      (epoch 2/2  resp_tok_acc= 71.2%  avg_pad_frac= 2.0%)
+2026-07-27 10:07:39  step   1,910 | loss  1.0517 | lr 3.50e-05 |   440.5k tok/s | gnorm  0.57 | 0.243B toks | step_took 595.0ms | total_time   1384s
+2026-07-27 10:07:39      (epoch 2/2  resp_tok_acc= 69.5%  avg_pad_frac= 2.5%)
+2026-07-27 10:07:45  step   1,920 | loss  1.0923 | lr 3.45e-05 |   417.5k tok/s | gnorm  0.55 | 0.244B toks | step_took 627.9ms | total_time   1389s
+2026-07-27 10:07:45      (epoch 2/2  resp_tok_acc= 68.6%  avg_pad_frac= 2.5%)
+2026-07-27 10:07:51  step   1,930 | loss  1.1697 | lr 3.39e-05 |   327.3k tok/s | gnorm  0.41 | 0.245B toks | step_took 800.9ms | total_time   1396s
+2026-07-27 10:07:51      (epoch 2/2  resp_tok_acc= 70.1%  avg_pad_frac= 2.0%)
+2026-07-27 10:07:58  step   1,940 | loss  1.1165 | lr 3.35e-05 |   378.4k tok/s | gnorm  0.50 | 0.247B toks | step_took 692.8ms | total_time   1402s
+2026-07-27 10:07:58      (epoch 2/2  resp_tok_acc= 69.5%  avg_pad_frac= 2.2%)
+2026-07-27 10:08:04  step   1,950 | loss  0.9245 | lr 3.30e-05 |   525.0k tok/s | gnorm  0.54 | 0.248B toks | step_took 499.3ms | total_time   1408s
+2026-07-27 10:08:04      (epoch 2/2  resp_tok_acc= 73.9%  avg_pad_frac= 2.4%)
+2026-07-27 10:08:10  step   1,960 | loss  0.9661 | lr 3.26e-05 |   409.7k tok/s | gnorm  0.54 | 0.249B toks | step_took 639.8ms | total_time   1415s
+2026-07-27 10:08:10      (epoch 2/2  resp_tok_acc= 70.4%  avg_pad_frac= 2.7%)
+2026-07-27 10:08:17  step   1,970 | loss  1.0614 | lr 3.22e-05 |   376.5k tok/s | gnorm  0.52 | 0.251B toks | step_took 696.2ms | total_time   1421s
+2026-07-27 10:08:17      (epoch 2/2  resp_tok_acc= 69.8%  avg_pad_frac= 2.5%)
+2026-07-27 10:08:24  step   1,980 | loss  1.0820 | lr 3.18e-05 |   387.7k tok/s | gnorm  0.53 | 0.252B toks | step_took 676.1ms | total_time   1428s
+2026-07-27 10:08:24      (epoch 2/2  resp_tok_acc= 68.7%  avg_pad_frac= 2.5%)
+2026-07-27 10:08:30  step   1,990 | loss  0.9558 | lr 3.15e-05 |   562.1k tok/s | gnorm  0.62 | 0.253B toks | step_took 466.3ms | total_time   1434s
+2026-07-27 10:08:30      (epoch 2/2  resp_tok_acc= 71.4%  avg_pad_frac= 2.5%)
+2026-07-27 10:08:37  step   2,000 | loss  1.1054 | lr 3.12e-05 |   340.7k tok/s | gnorm  0.54 | 0.254B toks | step_took 769.5ms | total_time   1441s
+2026-07-27 10:08:37      (epoch 2/2  resp_tok_acc= 67.9%  avg_pad_frac= 2.5%)
+2026-07-27 10:08:37  
+────────────────────────────── SAMPLING step 2,000 ──────────────────────────────
+2026-07-27 10:08:37  Prompt: 'Explain what a black hole is in two sentences.'
+2026-07-27 10:08:37  Reply : 'A black hole is a region in space where the gravitational pull is so strong that nothing, not even light, can escape from it. In two sentences, the first sentence can be interpreted as a point where a massive star collapses into a singularity, which is what we call a black hole. The second sentence, however, suggests that the black hole is not just a point of light, but rather a very weak, unseen object.'
+
+2026-07-27 10:08:38  Prompt: 'Write a short poem about the ocean.'
+2026-07-27 10:08:38  Reply : "The waves gently lapping against the shore,\nIn the calm depths where sun's rays barely penetrate.\nThe seagulls' song, a symphony of serenity,\nA symphony of calm, as the day begins."
+
+2026-07-27 10:08:38  Prompt: "What's 17 * 24?"
+2026-07-27 10:08:38  Reply : '17 * 24 = 289.'
+
+2026-07-27 10:08:38  Prompt: 'Give me three tips for staying focused while studying.'
+2026-07-27 10:08:38  Reply : "Staying focused while studying can be challenging, but here are three tips to help you stay focused and productive. \n\nFirst, try to break down your study sessions into manageable chunks. This will help you focus on one topic at a time, reducing the feeling of being overwhelmed by the material. \n\nNext, use active learning techniques. This involves teaching the material to someone else, rather than simply talking about what you've learned. This can make your learning more engaging and interactive. \n\nAnother tip is to set specific goals for each study session. For example, you might use a set of 30-minute intervals to study two different topics. By setting clear goals, you can stay focused and motivated throughout the study period.\n"
+
+2026-07-27 10:08:41  ──────────────────────────────  EVAL step 2,000  val_loss=1.3076  train_loss=1.1054  ──────────────────────────────
+2026-07-27 10:08:41  EVAL step=2000 val_loss=1.307611
+2026-07-27 10:08:41      val_response_token_accuracy: 68.34%
+2026-07-27 10:08:56    ✓ Checkpoint saved → checkpoints_sft_v2/step_0002000.pt  (step 2,000)
+2026-07-27 10:08:56  CHECKPOINT step=2000 path=checkpoints_sft_v2/step_0002000.pt
+2026-07-27 10:09:01  step   2,010 | loss  0.8859 | lr 3.09e-05 |   649.8k tok/s | gnorm  0.62 | 0.256B toks | step_took 403.4ms | total_time   1466s
+2026-07-27 10:09:01      (epoch 2/2  resp_tok_acc= 75.5%  avg_pad_frac= 3.2%)
+2026-07-27 10:09:07  step   2,020 | loss  0.9456 | lr 3.07e-05 |   552.7k tok/s | gnorm  0.63 | 0.257B toks | step_took 474.3ms | total_time   1472s
+2026-07-27 10:09:07      (epoch 2/2  resp_tok_acc= 69.6%  avg_pad_frac= 2.5%)
+2026-07-27 10:09:14  step   2,030 | loss  0.9537 | lr 3.05e-05 |   424.8k tok/s | gnorm  0.52 | 0.258B toks | step_took 617.1ms | total_time   1478s
+2026-07-27 10:09:14      (epoch 2/2  resp_tok_acc= 70.4%  avg_pad_frac= 2.0%)
+2026-07-27 10:09:21  step   2,040 | loss  1.0661 | lr 3.03e-05 |   368.4k tok/s | gnorm  0.46 | 0.259B toks | step_took 711.5ms | total_time   1485s
+2026-07-27 10:09:21      (epoch 2/2  resp_tok_acc= 71.0%  avg_pad_frac= 2.3%)
+2026-07-27 10:09:27  step   2,050 | loss  0.9739 | lr 3.02e-05 |   432.6k tok/s | gnorm  0.52 | 0.261B toks | step_took 606.0ms | total_time   1492s
+2026-07-27 10:09:27      (epoch 2/2  resp_tok_acc= 72.3%  avg_pad_frac= 2.2%)
+2026-07-27 10:09:34  step   2,060 | loss  1.0924 | lr 3.01e-05 |   389.2k tok/s | gnorm  0.64 | 0.262B toks | step_took 673.5ms | total_time   1498s
+2026-07-27 10:09:34      (epoch 2/2  resp_tok_acc= 68.2%  avg_pad_frac= 4.8%)
+2026-07-27 10:09:41  step   2,070 | loss  1.1418 | lr 3.00e-05 |   388.7k tok/s | gnorm  0.51 | 0.263B toks | step_took 674.4ms | total_time   1505s
+2026-07-27 10:09:41      (epoch 2/2  resp_tok_acc= 69.4%  avg_pad_frac= 2.8%)
+2026-07-27 10:09:47  step   2,080 | loss  1.1515 | lr 3.00e-05 |   325.9k tok/s | gnorm  0.45 | 0.265B toks | step_took 804.4ms | total_time   1511s
+2026-07-27 10:09:47      (epoch 2/2  resp_tok_acc= 68.1%  avg_pad_frac= 1.9%)
+2026-07-27 10:10:00  ──────────────────────────────  EVAL step 2,085  val_loss=1.3142  ──────────────────────────────
+2026-07-27 10:10:00  EVAL step=2085 val_loss=1.314185
+2026-07-27 10:10:00      final val_response_token_accuracy: 68.11%
+2026-07-27 10:10:08  
+═════════════════════════════════════════════════════════════════
+  Training complete  —  0.265B tokens  in 0h 25m 31s
+═════════════════════════════════════════════════════════════════
+
+2026-07-27 10:10:08  
+Best val_loss: 1.3076  →  checkpoints_sft_v2/best.pt

@@ -66,11 +66,11 @@ import torch
 import torch.nn.functional as F
 import tiktoken
 
-from training.model      import GPT, ModelConfig, MODEL_PRESETS
-from training.data       import make_loader
-from training.scheduler  import get_lr
-from training.logger     import TrainingLogger
-from training.checkpoint import save_checkpoint, load_checkpoint, find_latest_checkpoint
+from architecture      import GPT, ModelConfig, MODEL_PRESETS
+from data              import make_loader
+from scheduler         import get_lr
+from logger            import TrainingLogger
+from checkpoint        import save_checkpoint, load_checkpoint, find_latest_checkpoint
 
 
 # ─────────────────────────────────────────────────────────────

@@ -87,7 +87,7 @@ import dataclasses
 import torch
 import torch.nn.functional as F
 
-from model      import GPT, ModelConfig
+from architecture      import GPT, ModelConfig
 from sft_data   import make_sft_loader
 from sft_tokenizer import (
     build_chat_tokenizer,
@@ -119,8 +119,8 @@ class SFTConfig:
     # ── Optimizer ────────────────────────────────────────────
     # ~12x lower than typical pretraining max_lr — SFT nudges a converged
     # model, it doesn't train one from scratch.
-    max_lr:        float = 5e-5
-    min_lr:        float = 5e-6
+    max_lr:        float = 3e-4
+    min_lr:        float = 3e-5
     weight_decay:  float = 0.1
     beta1:         float = 0.9
     beta2:         float = 0.95

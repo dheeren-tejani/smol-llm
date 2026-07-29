@@ -76,24 +76,8 @@ DATASET_LOADERS = {
 # ─────────────────────────────────────────────────────────────────────────
 
 def row_to_messages_smoltalk(row) -> list:
-    messages = row.get("messages", [])
-    
-    # 1. Enforce single-turn (User -> Assistant or System -> User -> Assistant)
-    if len(messages) not in (2, 3):
-        return [] # Returning empty list triggers the "invalid" drop downstream
-        
-    # 2. Token/Word length limits to prevent capacity crowding
-    for m in messages:
-        if len(m.get("content", "").split()) > 200:
-            return []
-            
-    # 3. Drop heavy code execution or AI alignment refusals
-    assistant_content = messages[-1].get("content", "")
-    forbidden = ["def ", "import ", "class ", "```python", "As an AI", "I cannot fulfill"]
-    if any(x in assistant_content for x in forbidden):
-        return []
-        
-    return [{"role": m["role"], "content": m["content"]} for m in messages]
+    # Pass the full conversation through without dropping multi-turn or code elements
+    return [{"role": m["role"], "content": m["content"]} for m in row.get("messages", [])]
 
 def row_to_messages_no_robots(row) -> list:
     return [{"role": m["role"], "content": m["content"]} for m in row["messages"]]

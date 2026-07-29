@@ -1,9 +1,12 @@
--f https://download.pytorch.org/whl/cpu
-
+numpy
 torch
 transformers
+accelerate
 fastapi
 uvicorn
 pydantic
 python-dotenv
 tqdm
+tiktoken
+cryptography
+modal

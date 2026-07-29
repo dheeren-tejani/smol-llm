@@ -79,7 +79,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model import (
+from architecture import (
     ModelConfig, GPT, TransformerBlock, MultiHeadAttention,
     _apply_rotary,
 )
@@ -565,8 +565,8 @@ def parse_args():
                     choices=["cuda", "cpu"])
     p.add_argument("--max-new-tokens", type=int, default=200)
     p.add_argument("--temperature", type=float, default=0.7)
-    p.add_argument("--top-k", type=int, default=40, help="0 disables top-k")
-    p.add_argument("--top-p", type=float, default=1.0, help="1.0 disables nucleus sampling")
+    p.add_argument("--top-k", type=int, default=None, help="0 disables top-k")
+    p.add_argument("--top-p", type=float, default=None, help="1.0 disables nucleus sampling")
     p.add_argument("--repetition-penalty", type=float, default=1.15, help="1.0 disables it")
     p.add_argument("--system", type=str, default=None, help="Optional system prompt")
     p.add_argument("--metrics-file", type=str, default="chat_metrics.jsonl")
