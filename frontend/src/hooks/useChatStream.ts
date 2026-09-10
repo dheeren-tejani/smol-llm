@@ -200,10 +200,10 @@ export function useChatStream() {
     setWaking(false);
   }, [flush, scheduleFlush, pruneStub]);
 
-  const send = useCallback((text: string) => {
+  const send = useCallback((text: string): boolean => {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    if (statusRef.current === 'thinking' || statusRef.current === 'streaming') return;
+    if (!trimmed) return false;
+    if (statusRef.current === 'thinking' || statusRef.current === 'streaming') return false;
 
     const threadId = activeIdRef.current;
     const existing = threadsRef.current.find((t) => t.id === threadId);
@@ -224,7 +224,8 @@ export function useChatStream() {
       return [updated, ...prev.filter((t) => t.id !== threadId)]; // most-recent-first
     });
     void runGeneration(threadId, payload, stub.id);
-  }, [runGeneration]);
+    return true;
+}, [runGeneration]);
 
   const stop = useCallback(() => { abortRef.current?.abort(); }, []);
 

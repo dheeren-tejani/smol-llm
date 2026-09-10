@@ -7,7 +7,7 @@ import { Sidebar } from './components/Sidebar';
 import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
 import {
-  ArrowDownIcon, BracesIcon, FileIcon, LogoMark, NetworkIcon, PanelLeftIcon, TableIcon, TrashIcon,
+  ArrowDownIcon, BracesIcon, FileIcon, LogoMark, NetworkIcon, PanelLeftIcon, BookOpenIcon, ListIcon, TableIcon, TrashIcon,
 } from './lib/icons';
 import type { IconProps } from './lib/icons';
 
@@ -17,10 +17,11 @@ const KBD_HINT = IS_MAC ? '⌘ K' : 'Ctrl K';
 
 interface Starter { icon: FC<IconProps>; label: string; prompt: string }
 const STARTERS: Starter[] = [
-  { icon: NetworkIcon, label: 'How self-attention works', prompt: 'Explain how self-attention works in a transformer' },
-  { icon: BracesIcon, label: 'Debounce in TypeScript', prompt: 'Write a debounce function in TypeScript' },
-  { icon: TableIcon, label: 'REST vs GraphQL', prompt: 'Compare REST vs GraphQL' },
-  { icon: FileIcon, label: 'Markdown + KaTeX demo', prompt: 'Show me a Markdown and KaTeX demo' },
+  { icon: NetworkIcon, label: 'Define Photosynthesis', prompt: 'Define Photosynthesis' },
+  { icon: BracesIcon, label: 'Adding 2 numbers in Python', prompt: 'How to add 2 numbers in Python using + operator' },
+  { icon: BookOpenIcon, label: 'Narrate a long story', prompt: 'Narrate a long story' },
+  { icon: ListIcon, label: 'List 3 colors', prompt: 'List 3 colors' },
+  { icon: TableIcon, label: "Physics vs Biology", prompt: "Difference between Physics and Biology"},
 ];
 
 function EmptyState({ onStarter }: { onStarter(prompt: string): void }) {
@@ -28,7 +29,7 @@ function EmptyState({ onStarter }: { onStarter(prompt: string): void }) {
     <div className="empty">
       <LogoMark size={56} glow />
       <h2>How can I help you today?</h2>
-      <p>Tokens stream in live, sampling parameters apply per request, and markdown arrives fully rendered.</p>
+      <p>A 124M param LLaMA style LLM trained from scratch on random weights on 22B Cosmopedia tokens</p>
       <div className="starters">
         {STARTERS.map((s, i) => {
           const Ico = s.icon;
@@ -108,9 +109,14 @@ export default function App() {
   };
 
   const handleSend = (text: string) => {
-    stickRef.current = true;
-    setAtBottom(true);
-    send(text);
+      stickRef.current = true;
+      setAtBottom(true);
+      if (send(text)) setDraft(''); // clear the bar only if the send was accepted
+  };
+
+  const handleClearChat = () => {
+      chat.clearChat();
+      setDraft('');
   };
 
   const handleNewChat = () => {
@@ -190,7 +196,7 @@ export default function App() {
             <span className={'tb-status' + (dotOn ? '' : ' off')}>{statusText}</span>
           </div>
           <div style={{ marginLeft: 'auto' }}>
-            <button type="button" className="tb-clear" onClick={chat.clearChat} disabled={isEmpty}>
+            <button type="button" className="tb-clear" onClick={handleClearChat} disabled={isEmpty}>
               <TrashIcon size={13} />
               <span>Clear</span>
             </button>
