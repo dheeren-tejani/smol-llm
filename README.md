@@ -97,9 +97,9 @@ The model was evaluated using EleutherAI's [`lm-evaluation-harness`](https://git
 Standardized evaluation on zero-shot scientific and commonsense reasoning benchmarks against established models under 200M parameters. Metrics report length-normalized accuracy (`acc_norm`) for ARC, PIQA, HellaSwag, and OpenBookQA, and raw accuracy (`acc`) for WinoGrande.
 
 | Model | Parameters | Pretraining Tokens | ARC (Norm) | PIQA (Norm) | HellaSwag (Norm) | OBQA (Norm) | WinoGrande | Core Avg |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **SmolLM-135M** | 135M | 600B | 43.99% | 69.60% | 42.30% | 33.60% | 52.70% | **48.44%** |
-| **MobileLM-125M** | 125M | 1,000B (1T) | 35.51% | 65.30% | 38.90% | 39.50% | 53.10% | |**46.46%** |
+| **MobileLM-125M** | 125M | 1,000B (1T) | 35.51% | 65.30% | 38.90% | 39.50% | 53.10% | **46.46%** |
 | **This Model (Base)** | **124M** | **22B** | **32.18%** | **61.70%** | **31.13%** | **28.60%** | **50.83%** | **40.89%** |
 | **GPT2-137M** | ~124M | ~10B–40B | 31.09% | 62.51% | 29.76% | 29.40% | 49.72% | **40.50%** |
 | **Pythia-160M** | 160M | 300B | 31.92% | 61.64% | 29.55% | 27.80% | 49.49% | **40.08%** |
