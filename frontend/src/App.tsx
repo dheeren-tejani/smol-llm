@@ -7,7 +7,7 @@ import { Sidebar } from './components/Sidebar';
 import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
 import {
-  ArrowDownIcon, BracesIcon, FileIcon, LogoMark, NetworkIcon, PanelLeftIcon, BookOpenIcon, ListIcon, TableIcon, TrashIcon,
+  ArrowDownIcon, BracesIcon, LogoMark, NetworkIcon, PanelLeftIcon, BookOpenIcon, ListIcon, TableIcon, TrashIcon,
 } from './lib/icons';
 import type { IconProps } from './lib/icons';
 
