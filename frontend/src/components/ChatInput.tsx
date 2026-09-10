@@ -1,68 +1,83 @@
-import { useRef, useEffect } from 'react';
-import { Send, Plus } from 'lucide-react';
+import { useEffect } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
+import type { Status } from '../types/chat';
+import { AlertIcon, ArrowUpIcon, RotateIcon, XIcon } from '../lib/icons';
 
-interface ChatInputProps {
+export interface ChatInputProps {
   value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
-  disabled: boolean;
-  maxLength?: number;
+  onChange(v: string): void;
+  onSend(text: string): void;
+  onStop(): void;
+  status: Status;
+  error: string | null;
+  onRetry(): void;
+  onDismissError(): void;
+  inputRef: MutableRefObject<HTMLTextAreaElement | null>;
 }
 
-export function ChatInput({ value, onChange, onSend, disabled, maxLength = 1024 }: ChatInputProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+export function ChatInput({ value, onChange, onSend, onStop, status, error, onRetry, onDismissError, inputRef }: ChatInputProps) {
+  const busy = status === 'thinking' || status === 'streaming';
+  const failed = status === 'error';
+  const canSubmit = !busy && !failed && value.trim().length > 0;
 
+  // Auto-resize up to 200px, then scroll.
   useEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-    }
-  }, [value]);
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  }, [value, inputRef]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const submit = () => { if (canSubmit) onSend(value.trim()); };
+
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      if (value.trim() && !disabled) onSend();
+      submit();
     }
   };
 
   return (
-    <div className="shrink-0 bg-background px-4 py-3">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-end gap-2 bg-card border border-border rounded-xl px-3 py-2 transition-shadow duration-200 focus-within:shadow-[0_0_0_1px_hsl(0_0%_20%)]">
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={e => {
-              if (e.target.value.length <= maxLength) onChange(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Message...."
-            disabled={disabled}
-            rows={1}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[36px] max-h-[160px] py-1.5 pl-4 disabled:opacity-50"
-          />
-
-          <button
-            onClick={onSend}
-            disabled={!value.trim() || disabled}
-            className={`w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 shrink-0 mb-0.5 ${
-              value.trim() && !disabled
-                ? 'bg-primary text-primary-foreground opacity-100'
-                : 'opacity-0 pointer-events-none'
-            }`}
-            aria-label="Send message"
-          >
-            <Send className="w-4 h-4" />
+    <div className="composer-outer">
+      {failed && error && (
+        <div className="errb" role="alert">
+          <AlertIcon size={15} style={{ color: '#fbbf24' }} />
+          <div className="msg-t">
+            <span className="em">Connection failed. </span>
+            <span className="ed">{error}</span>
+          </div>
+          <button type="button" onClick={onRetry} className="retry">
+            <RotateIcon size={12} /><span>Retry</span>
+          </button>
+          <button type="button" onClick={onDismissError} className="dismiss" aria-label="Dismiss error">
+            <XIcon size={13} />
           </button>
         </div>
-        <div className="flex justify-end mt-1">
-          <span className="text-[10px] text-muted-foreground tabular-nums">
-            {value.length}/{maxLength}
-          </span>
+      )}
+
+      <div className={'composer' + (failed ? ' err' : '')}>
+        <textarea
+          ref={inputRef}
+          rows={1}
+          value={value}
+          disabled={failed}
+          autoComplete="off"
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={failed ? 'Recover the connection to continue' : 'Message the model…'}
+        />
+        <div className="composer-foot">
+          <div className="hint">Enter to send · Shift+Enter for a new line</div>
+          <button type="button"
+            onClick={busy ? onStop : submit}
+            disabled={!busy && !canSubmit}
+            aria-label={busy ? 'Stop generating' : 'Send message'}
+            className={'send' + (busy || canSubmit ? ' on' : '')}>
+            {busy ? <span className="stop-sq" /> : <ArrowUpIcon size={15} sw={2.5} />}
+          </button>
         </div>
       </div>
+      <p className="footnote">Parameters apply on the next request</p>
     </div>
   );
 }
