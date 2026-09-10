@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import type { ChatMessage } from '../types/chat';
+import type { ChatMessage as ChatMessageModel } from '../types/chat';
 import { appendCursor, parseBlocks } from '../lib/markdown';
 import { copyText, formatClock } from '../lib/utils';
 import { CheckIcon, CopyIcon, LogoMark, RotateIcon } from '../lib/icons';
@@ -46,7 +46,7 @@ function CopyAction({ text }: { text: string }) {
 }
 
 export interface ChatMessageProps {
-  message: ChatMessage;
+  message: ChatMessageModel;
   showTyping: boolean;
   showWaking: boolean;
   showCursor: boolean;
