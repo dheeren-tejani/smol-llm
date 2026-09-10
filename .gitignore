@@ -19,3 +19,8 @@ __pycache__
 
 # Logs
 chat_metrics.jsonl
+# Local Netlify folder
+.netlify
+
+metadata/model.py
+metadata/plot_training.py

@@ -42,7 +42,7 @@ export const PARAM_RANGES = {
 
 export const DEFAULT_PARAMS: GenerationParams = {
   max_output_tokens: 256,
-  temperature: 0.10,
+  temperature: 0.20,
   top_p: 0.90,
   top_k: 50,
   repetition_penalty: 1.30,

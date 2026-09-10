@@ -17,12 +17,13 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from config import (
-    CHECKPOINT_PATH, CORS_ORIGINS, GenerationDefaults,
+    GGUF_MODEL_PATH, GGUF_N_CTX, CORS_ORIGINS, GenerationDefaults,
     SERVER_HOST, SERVER_PORT, LOG_DIR, LOGGING_NOTICE,
     RATE_LIMIT_PER_MINUTE, RATE_LIMIT_PER_DAY,
     MAX_CONCURRENT_GENERATIONS, TRUST_FORWARDED_FOR,
     AUTH_SECRET_KEY, AUTH_KEY_VALUE, AUTH_TOKEN_MAX_AGE_SECONDS, AUTH_ENABLED,
 )
+
 from inference import GenerationRequest, engine
 from rate_limit import SlidingWindowRateLimiter, ConcurrencyGuard, get_client_key
 from modal_volume_logger import ModalVolumeRequestLogger, RequestLogEntry
@@ -72,31 +73,34 @@ if not AUTH_ENABLED:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Backend — starting up (server binds immediately; "
-                "model loads in the background)")
+    logger.info("Backend — starting up and loading model weights...")
 
-    async def _load():
-        try:
-            await asyncio.to_thread(engine.load_model)
-        except Exception as exc:
-            logger.critical("🔴 Failed to load model: %s", exc, exc_info=True)
+    # 1. Block and finish loading before opening traffic
+    try:
+        await asyncio.to_thread(engine.load_model)
+    except Exception as exc:
+        logger.critical("🔴 Failed to load model during startup: %s", exc, exc_info=True)
+        raise exc  # Halts container boot if the model file is missing or corrupted
 
+    # 2. Start background maintenance loops
     async def _prune_loop():
         while True:
             await asyncio.sleep(600)
             dropped_min = per_minute_limiter.prune(max_idle_seconds=3600)
             dropped_day = per_day_limiter.prune(max_idle_seconds=90000)
             if dropped_min or dropped_day:
-                logger.info("[rate_limit] pruned idle entries — per_minute=%d per_day=%d",
-                            dropped_min, dropped_day)
+                logger.info(
+                    "[rate_limit] pruned idle entries — per_minute=%d per_day=%d",
+                    dropped_min, dropped_day,
+                )
 
-    load_task  = asyncio.create_task(_load())
     prune_task = asyncio.create_task(_prune_loop())
     await req_logger.start_background_flush()
 
+    # 3. Traffic gate opens here — engine.is_ready is now guaranteed to be True
     yield
 
-    load_task.cancel()
+    # 4. Clean teardown (load_task is no longer here to cancel)
     prune_task.cancel()
     await req_logger.stop_and_final_flush()
     logger.info("Backend — shutting down")
@@ -186,7 +190,7 @@ async def health():
         status="ok" if ready else "loading",
         model_loaded=ready,
         device=engine.device,
-        checkpoint=CHECKPOINT_PATH,
+        checkpoint=GGUF_MODEL_PATH,
         uptime_s=round(time.time() - _server_start, 1),
     )
     return JSONResponse(status_code=200 if ready else 503, content=body.model_dump())
@@ -194,18 +198,14 @@ async def health():
 
 @app.get("/config", tags=["meta"])
 async def get_config():
-    cfg = engine._cfg
     return {
-        "model": None if cfg is None else {
-            "vocab_size":  cfg.vocab_size,
-            "d_model":     cfg.d_model,
-            "n_layers":    cfg.n_layers,
-            "n_heads":     cfg.n_heads,
-            "d_ff":        cfg.d_ff,
-            "max_seq_len": cfg.max_seq_len,
+        "model": {
+            "model_path": GGUF_MODEL_PATH,
+            "max_seq_len": GGUF_N_CTX,
+            "engine": "llama.cpp (GGUF)",
         },
-        "tokenizer": "gpt2_chat (tiktoken, sft_tokenizer.py)",
-        "precision": "fp32",
+        "tokenizer": "embedded (GGUF Jinja)",
+        "precision": "Q8_0",
         "defaults": {
             "max_tokens":         GenerationDefaults.MAX_TOKENS,
             "temperature":        GenerationDefaults.TEMPERATURE,
@@ -214,8 +214,7 @@ async def get_config():
             "repetition_penalty": GenerationDefaults.REPETITION_PENALTY,
             "range_epsilon":      GenerationDefaults.RANGE_EPSILON,
         },
-        "checkpoint": CHECKPOINT_PATH,
-        "device":     engine.device,
+        "device": engine.device,
         "model_loaded": engine.is_ready,
         "logging_notice": LOGGING_NOTICE,
         "rate_limit": {
@@ -225,7 +224,6 @@ async def get_config():
         },
         "auth_enabled": AUTH_ENABLED,
     }
-
 
 def _make_req(body: GenerateRequest) -> GenerationRequest:
     return GenerationRequest(

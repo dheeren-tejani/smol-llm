@@ -1,42 +1,53 @@
-"""
-modal_app.py — Modal deployment for the Smol-lm backend.
-"""
+import os
+import sys
 import modal
 
 app = modal.App("smol-lm-backend")
 
+# Build image with CUDA support and explicit GCC pointers
 image = (
-    modal.Image.debian_slim(python_version="3.11")
+    modal.Image.from_registry("nvidia/cuda:12.4.0-devel-ubuntu22.04", add_python="3.11")
+    .apt_install("build-essential", "cmake", "ninja-build")
+    .env({"CC": "gcc", "CXX": "g++"})  # Fix: overrides the phantom clang environment variable
     .pip_install(
-        "torch", "fastapi", "uvicorn", "pydantic", "python-dotenv",
-        "tiktoken", "cryptography", "numpy",
+        "fastapi", "uvicorn", "pydantic", "python-dotenv",
+        "cryptography", "numpy",
     )
-    .add_local_dir(".", remote_path="/app",
-                   ignore=["*.pt", "__pycache__", ".git", "logs", ".env", "llm/**", "playground/**"])
-    .add_local_file("models/best_sft.pt", remote_path="/app/models/best_sft.pt")
+    .run_commands(
+        "CC=gcc CXX=g++ CMAKE_ARGS='-DGGML_CUDA=on -DCMAKE_CUDA_ARCHITECTURES=75' "
+        "pip install llama-cpp-python --no-binary llama-cpp-python"
+    )
+    .add_local_file("models/model_q8_0.gguf", remote_path="/app/models/model_q8_0.gguf")
+    .add_local_dir(
+        ".",
+        remote_path="/app",
+        ignore=["*.pt", "__pycache__", ".git", "logs", ".env", "llm/**", "playground/**", "models/**"],
+    )
 )
-    
-secrets = [modal.Secret.from_name("smol-lm-secrets")]
 
-# Persistent volume for request/response logs — survives container restarts
-# and scale-to-zero. Cost: $0.09/GiB-month, 1 TiB/month free (effectively
-# $0 for text logs at this scale).
 log_volume = modal.Volume.from_name("smol-lm-logs", create_if_missing=True)
 
 
 @app.function(
     image=image,
     gpu="T4",
-    secrets=secrets,
+    cpu=2,
+    enable_memory_snapshot=True,
+    secrets=[modal.Secret.from_name("smol-lm-secrets")],
     volumes={"/logs": log_volume},
     min_containers=0,
-    scaledown_window=120,
+    scaledown_window=600,
     timeout=300,
 )
 @modal.asgi_app()
 def fastapi_app():
-    import sys, os
     sys.path.insert(0, "/app")
     os.environ["LOG_DIR"] = "/logs"
+    os.environ["GGUF_MODEL_PATH"] = "/app/models/model_q8_0.gguf"
+    os.environ["GGUF_N_GPU_LAYERS"] = "-1"
+    os.environ["GGUF_N_THREADS"] = "2"
+    
     from main import app as fastapi_instance
+    import main
+    main.req_logger.volume = log_volume
     return fastapi_instance

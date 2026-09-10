@@ -31,12 +31,12 @@ Default preset (`gpt2-small`): 768d, 12 layers, 12 heads, ~124M parameters.
 
 ### RangeFlow (custom inference constraint)
 
-The inference server implements a novel **RangeFlow** attention constraint. During generation:
+The inference script implements a novel **RangeFlow** attention constraint. During generation:
 
 1. **Capture pass** — one full forward pass over the prompt records the per-head min/max bounding box of every K and V tensor across all layers.
 2. **Guard pass** — during autoregressive generation, each new token's K/V is clamped into the anchor box expanded by ±ε, steering the model to stay semantically close to the prompt.
 
-`range_epsilon` controls tightness: ~0.05 is strict, ~0.20 is loose. This is exposed as a tunable parameter in the chat UI.
+`range_epsilon` controls tightness: ~0.05 is strict, ~0.20 is loose.
 
 ---
 
@@ -88,10 +88,131 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 
 ---
 
+## Benchmarks
+
+The model was evaluated using EleutherAI's [`lm-evaluation-harness`](https://github.com/EleutherAI/lm-evaluation-harness) across both the base pretraining checkpoint (`best_raw.pt`) and the fine-tuned chat checkpoint (`best_sft.pt`).
+
+### 1. Zero-Shot Core Reasoning (Sub-200M Cohort)
+
+Standardized evaluation on zero-shot scientific and commonsense reasoning benchmarks against established models under 200M parameters. Metrics report length-normalized accuracy (`acc_norm`) for ARC, PIQA, HellaSwag, and OpenBookQA, and raw accuracy (`acc`) for WinoGrande.
+
+| Model | Parameters | Pretraining Tokens | ARC (Norm) | PIQA (Norm) | HellaSwag (Norm) | OBQA (Norm) | WinoGrande | Core Avg |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **SmolLM-135M** | 135M | 600B | 43.99% | 69.60% | 42.30% | 33.60% | 52.70% | **48.44%** |
+| **MobileLM-125M** | 125M | 1,000B (1T) | 35.51% | 65.30% | 38.90% | 39.50% | 53.10% | |**46.46%** |
+| **This Model (Base)** | **124M** | **22B** | **32.18%** | **61.70%** | **31.13%** | **28.60%** | **50.83%** | **40.89%** |
+| **GPT2-137M** | ~124M | ~10B–40B | 31.09% | 62.51% | 29.76% | 29.40% | 49.72% | **40.50%** |
+| **Pythia-160M** | 160M | 300B | 31.92% | 61.64% | 29.55% | 27.80% | 49.49% | **40.08%** |
+
+*Note: ARC reflects the standard unweighted mean of ARC-Easy (`38.34%`) and ARC-Challenge (`26.02%`).*
+
+#### Key Takeaway
+Despite training on only **22B tokens**, the model achieves **3rd place** in its parameter cohort outscoring Pythia-160M (trained on 300B tokens of The Pile) and matching/outperforming GPT-2 across HellaSwag, WinoGrande, and ARC. This validates the sample efficiency of combining SwiGLU activations and RMSNorm pre-normalization with high-density synthetic educational data.
+
+---
+
+### 2. Language Modeling & Compression
+
+Continuous text distribution and long-context tracking evaluated zero-shot via sliding-window cross-entropy:
+
+| Benchmark | Metric | Value | Reference / Notes |
+| :--- | :--- | :---: | :--- |
+| **WikiText-2** | Bits Per Byte (BPB) | **1.3271** | Near English theoretical entropy boundary (~1.0–1.3) |
+| | Byte Perplexity | **2.5089** | Equivalent to $2^{\text{BPB}}$ branching uncertainty |
+| | Token Perplexity | **~34.4** | In line with standard GPT-2 Small baseline (~31–36) |
+| **LAMBADA (OpenAI)** | Accuracy | **18.18%** | Exact-match target word prediction; matches Pythia-160M |
+| | Perplexity | **591.99** | Single target word exponentiated cross-entropy |
+
+---
+
+### 3. SFT Catastrophic Forgetting Audit
+
+To ensure supervised fine-tuning did not erode core pretraining representations ("alignment tax"), the SFT checkpoint was evaluated against the identical raw reasoning tasks[cite: 7, 12]:
+
+| Benchmark Task | Metric | Base (Pretrained) | SFT Checkpoint | Delta | Status |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **HellaSwag** | `acc_norm` | 31.13% | **31.39%** | +0.26\% | Preserved |
+| **PIQA** | `acc_norm` | 61.70% | **61.48%** | -0.22\% | Preserved |
+| **ARC-Easy** | `acc_norm` | 38.34% | **41.37%** | **+3.03\%** | Improved |
+| **ARC-Challenge** | `acc_norm` | 26.02% | **23.72%** | -2.30\% | Slight Drop |
+| **OpenBookQA** | `acc_norm` | 28.60% | **29.00%** | +0.40\% | Improved |
+| **WinoGrande** | `acc` | 50.83% | **52.57%** | **+1.74\%** | Improved |
+| **Core 5-Task Average** | *Mean* | **40.89%** | **41.40%** | **+0.51\%** | **Net Reasoning Gain** |
+
+Targeted prompt-loss masking (`labels = -100`) and low-LR fine-tuning prevented catastrophic forgetting, yielding a net **+0.51%** improvement across core benchmarks.
+
+---
+
+### 4. Instruction Following & Chat Alignment
+
+#### Google IFEval (Verifiable Constraint Following)
+Evaluated via `lm_eval` with the official Jinja chat template (`<|system|>`, `<|user|>`, `<|assistant|>`, `<|end|>`). Because the model architecture uses a 1,024-token context window ($T=1024$), generation was capped at `max_gen_toks=512` to preserve prompt headroom:
+
+| IFEval Metric | Score | SmolLM-135M-Instruct (600B) | SmolLM2-135M-Instruct (2T) |
+| :--- | :---: | :---: | :---: |
+| **Instruction-Level (Loose)** | **37.17%** | ~22.8% | ~37.8% |
+| **Instruction-Level (Strict)** | **34.53%** | ~18.5% | ~34.2% |
+| **Prompt-Level (Loose)** | **24.95%** | ~14.0% | ~25.5% |
+| **Prompt-Level (Strict)** | **22.92%** | ~11.5% | ~22.0% |
+
+*Note: The 512-token generation limit induces an automatic zero-score on test prompts requiring long essays ($\ge 400$ words), making the prompt-level strict metric conservative. Despite this constraint, the model achieves over 37% instruction-level compliance.*
+
+#### Aligned MMLU & OpenBookQA (With Chat Template)
+Conditioning questions inside the assistant template (`--apply_chat_template`) improves direct QA grounding over zero-shot base completion:
+- **OpenBookQA (`acc_norm`)**: **30.00%** (up from 28.60% base, beating GPT-2's 29.40%)
+- **MMLU (Zero-Shot Overall)**: **24.16%** (Social Sciences: **24.18%**, STEM: **23.09%**, Other: **24.88%**)
+
+---
+
 ## Project structure
 
 ```
+├── backend/
+│   ├── inference.py             # InferenceEngine (blocking + SSE streaming)
+│   ├── config.py                # All env-var config (model preset, paths, server, defaults)
+│   ├── auth.py                  # for authetication
+│   ├── modal_app.py             # for deployment on modal
+│   ├── modal_volume_logger.py   # for storing logs on volume storage
+│   ├── rate_limit.py            # for protection from DoS and greedy users
+│   ├── main.py                  # FastAPI app (health, /generate, /generate/stream, /config)
+│   ├── requirements.txt         # Contains packages required to function
+│   └── .env.example             # Local dev environment template
+│
+├── frontend/                    # React + Tailwind chat UI
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ChatMessage.tsx     # Message list with Markdown + syntax highlighting
+│   │   │   ├── CodeBlock.tsx   # Header with sidebar toggle + new chat
+│   │   │   ├── ChatInput.tsx   # Auto-resize textarea with send button
+│   │   │   ├── Sidebar.tsx     # Collapsible generation parameter panel
+│   │   ├── hooks/
+│   │   │   ├── useChatStream.ts  # All chat state + SSE streaming logic
+│   │   │   ├── useBackendStatus.ts # Handles Backend cold start
+│   │   │   └── useMediaQuery.ts
+│   │   ├── lib/
+│   │   │   ├── highlight.ts     # Syntax Highlighter
+│   │   │   ├── icons.ts         # Custom Icons for frontpage
+│   │   │   ├── markdown.ts      # For markdown rendering
+│   │   │   ├── utils.ts
+│   │   ├── services/
+│   │   │   ├── chatService.ts   # SSE Transport layer
+│   │   └── types/
+│   │       ├── chat.ts          # Parameter control
+│   ├── netlify/
+│   │   ├── functions/
+│   │   │   ├── chat.ts          # acts as a middleware 
+│   │   │   ├── health.ts        # Health ping to wake up backend server
+│   ├── App.tsx
+│   ├── index.css
+|
 ├── metadata/
+│   ├── benchmark/
+│   │   ├── base_benchmark_results.json   # Base checkpoint benchmark results
+│   │   ├── convert_sft_to_hf.py          # Script used to convert sft ckpt to HF compliant
+│   │   ├── convert_to_hf.py              # Script used to convert base ckpt to HF compliant
+│   │   ├── sft_forgetting_results.json   # SFT checkpoint benchmark for catastrophic forgetting
+│   │   ├── sft_ifeval_results.json       # SFT checkpoint benchmark for Formatting check
+│   │   ├── sft_instruct_results.json     # SFT checkpoint benchmark results
 │   ├── pretraining_metrics/
 │   │   ├── loss.png             # Training loss across all runs
 │   │   ├── config.json          # Contains configuration of the run
@@ -100,7 +221,7 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 │   │   ├── throughput.png       # Throughput (tok/sec) throughout run on a H100
 │   │   ├── learning_rate.png    # How learning rate decayed throughout the run
 │   │   ├── metrics.csv          # Logs of run in a csv format
-├── sft_metrics/
+│   ├── sft_metrics/
 │   │   ├── loss.png             # Training loss across all runs
 │   │   ├── config.json          # Contains configuration of the run
 │   │   ├── dashboard.png        # Has all plots in a single board
@@ -115,46 +236,15 @@ Looking at the loss curve, there's a visible bump around step ~6,000. The first 
 │   ├── data.py                  # memmap DataLoader for .bin files
 │   ├── scheduler.py             # Cosine LR schedule with warmup
 │   ├── checkpoint.py            # Save / load / prune checkpoints
-│   ├── logger.py                # Structured logger (CSV metrics + text log)
-│   ├── plot_training.py         # Used to plot training metrics 
+│   ├── logger.py                # Structured logger (CSV metrics + text log) 
 │   ├── prepare_cosmopedia.py    # Download + tokenize Cosmopedia → train.bin / val.bin
 │   ├── sft_data_prepare.py      # smol-smoltalk dataset in .pt format
 │   ├── sft_tokenizer.py         # Helps tokenizing the special tokens
-│   └── sft_train.py             # SFT fine-tuning loop
-│
-├── backend/
-│   ├── model.py                 # Inference model (adds RangeFlow to training model)
-│   ├── inference.py             # InferenceEngine (blocking + SSE streaming)
-│   ├── config.py                # All env-var config (model preset, paths, server, defaults)
-│   ├── auth.py                  # for authetication
-│   ├── modal_app.py             # for deployment on modal
-│   ├── modal_volume_logger.py   # for storing logs on volume storage
-│   ├── rate_limit.py            # for protection from DoS and greedy users
-│   ├── sft_tokenizer.py         # imports tokenizer setup for the model
-│   ├── main.py                  # FastAPI app (health, /generate, /generate/stream, /config)
+│   ├── sft_train.py             # SFT fine-tuning loop
 │   ├── standalone_inference.py  # For Interaction without any servers or deployment
-│   ├── architecture.py          # Contains important classes and functions accessed by standalone_inference.py
-│   ├── Dockerfile               # CPU-only Docker image (bakes model + tokenizer)
-│   ├── requirements.txt         # Contains packages required to function
-│   └── .env.example             # Local dev environment template
+│   └── gguf_standalone_inference.py  # For Interaction with GGUF ckpt without any servers or deployment
 │
-├── frontend/                    # React + Tailwind chat UI
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatArea.tsx     # Message list with Markdown + syntax highlighting
-│   │   │   ├── ChatHeader.tsx   # Header with sidebar toggle + new chat
-│   │   │   ├── ChatInput.tsx    # Auto-resize textarea with send button
-│   │   │   ├── ChatSidebar.tsx  # Collapsible generation parameter panel
-│   │   │   ├── ParameterControl.tsx  # Slider / number input for each param
-│   │   │   └── TypingIndicator.tsx   # Animated dots while streaming
-│   │   ├── hooks/
-│   │   │   └── useChatState.ts  # All chat state + SSE streaming logic
-│   │   └── lib/
-│   │       └── types.ts         # Shared types + API_BASE_URL
-│   ├── netlify/
-│   │   ├── functions/
-│   │   │   ├── chat.ts          # acts as a middleware 
-│
+├──.gitignore
 └── README.md
 ```
 
@@ -246,12 +336,24 @@ cd frontend
 npm run build
 # Drag dist/ to Netlify, or connect the repo.
 # Set env var in Netlify dashboard:
-#   VITE_MODAL_BASE_URL = https://<your-modal-endpoint>
+# MODAL_BACKEND_URL = https://<your-modal-endpoint>
 ```
 
 Add a `netlify.toml` at project root for React Router to work on page refresh:
 
 ```toml
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -264,6 +366,10 @@ Add a `netlify.toml` at project root for React Router to work on page refresh:
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+[dev]
+  command = "npm run dev:ui"
+  targetPort = 5173
 ```
 
 ---
@@ -286,4 +392,4 @@ Add a `netlify.toml` at project root for React Router to work on page refresh:
 - The model hallucinates. It was trained on Cosmopedia which is educational/synthetic text — it doesn't know every fact, but it is pretty good for it's size.
 - Single-threaded inference (one request at a time).
 - No conversation memory — each request is stateless. The frontend sends only the current user message.
-- Inference on Cloud Run is around ~50–60 tok/s. Cold starts add a noticeable seconds.
+- Inference on Cloud Run is around ~200 tok/s due to GGUF. Cold starts add a noticeable seconds.
