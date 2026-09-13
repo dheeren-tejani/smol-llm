@@ -187,7 +187,7 @@ function SidebarBody(p: SidebarProps) {
         </div>
       </div>
 
-      <div className="side-foot">SLM-1.4B · local inference · v2</div>
+      <div className="side-foot">SLM-124M · local inference · v2</div>
     </>
   );
 }
